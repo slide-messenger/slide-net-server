@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.4.33122.133
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyMessenger", "MyMessenger.csproj", "{C1B86A57-632F-4FC8-AA79-873166EDCF48}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Server", "Server.csproj", "{821153CF-3D92-4220-A900-E5F000C91BD2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,15 +11,15 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{C1B86A57-632F-4FC8-AA79-873166EDCF48}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C1B86A57-632F-4FC8-AA79-873166EDCF48}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C1B86A57-632F-4FC8-AA79-873166EDCF48}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C1B86A57-632F-4FC8-AA79-873166EDCF48}.Release|Any CPU.Build.0 = Release|Any CPU
+		{821153CF-3D92-4220-A900-E5F000C91BD2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{821153CF-3D92-4220-A900-E5F000C91BD2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{821153CF-3D92-4220-A900-E5F000C91BD2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{821153CF-3D92-4220-A900-E5F000C91BD2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {4B59B7F6-7044-4C7E-B312-0D6499CE2C68}
+		SolutionGuid = {AF6B6B71-19E5-4DB5-8BBB-49BBE0A36D7A}
 	EndGlobalSection
 EndGlobal
