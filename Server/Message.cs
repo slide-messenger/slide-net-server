@@ -25,8 +25,8 @@ namespace MyMessenger
             TimeStamp = DateTime.Now;
         }
 
-        public string UserName { get; set; } = String.Empty;
-        public string MessageText { get; set; } = String.Empty;
+        public string UserName { get; set; } = string.Empty;
+        public string MessageText { get; set; } = string.Empty;
         public DateTime TimeStamp { get; set; } = DateTime.UtcNow;
 
         public override string ToString()

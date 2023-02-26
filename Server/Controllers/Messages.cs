@@ -8,10 +8,10 @@ namespace ASPCoreServer.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class Messenger : ControllerBase
+    public class Messages : ControllerBase
     {
         // список сообщений
-        static List<Message> ListOfMessages = new();
+        static readonly List<Message> ListOfMessages = new();
 
         // GET: api/<Messenger>
         [HttpGet]
@@ -30,7 +30,7 @@ namespace ASPCoreServer.Controllers
             {
                 output = JsonConvert.SerializeObject(ListOfMessages[id]);
             }
-            Console.WriteLine($"Запрошено сообщение #{id} : {output}");
+            Console.WriteLine($"<Messages> Запрошено сообщение #{id} : {output}");
             return output;
         }
 
@@ -44,8 +44,8 @@ namespace ASPCoreServer.Controllers
                 return BadRequest();
             }
             ListOfMessages.Add(msg);
-            Console.WriteLine($"Всего сообщений {ListOfMessages.Count} Посланное сообщение {msg}");
-            return new OkResult();
+            Console.WriteLine($"<Messages> Всего сообщений {ListOfMessages.Count} Посланное сообщение {msg}");
+            return Ok();
         }
 
         // PUT api/<Messenger>/5
