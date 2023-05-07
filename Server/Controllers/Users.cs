@@ -1,128 +1,93 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using MyMessenger;
-using Newtonsoft.Json;
-
-// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+using Server.Entities;
+using Server.SQLServer;
 
 namespace ASPCoreServer.Controllers
 {
-    public class UsersAPIRequest
-    {
-        public string Action { get; set; } = string.Empty;
-        public User User { get; set; } = new();
-
-        public UsersAPIRequest(string action, User user)
-        {
-            Action = action;
-            User = user;
-        }
-        public UsersAPIRequest()
-        {
-            Action = "";
-        }
-    }
-    [Route("api/Users")]
+    [Route("api/[controller]")]
     [ApiController]
     public class Users : ControllerBase
     {
-        // список сообщений
-        static readonly Dictionary<int, User> DictOfUsers = new();
-
-        // GET: api/<Auth>
-        [HttpGet]
-        public IEnumerable<string> Get()
-        {
-            return new string[] { "value1", "value2" };
-        }
-
-        [HttpGet("{id}")]
-        public string Get(int id)
-        {
-            string output = "Not found";
-            try
-            {
-                User user = DictOfUsers[id];
-                user.PasswordHash = "HIDDEN";
-                output = JsonConvert.SerializeObject(user);
-            }
-            catch (KeyNotFoundException) { };
-            Console.WriteLine($"<Users> Запрошен пользователь #{id} : {output}");
-            return output;
-        }
-
-        public User? FindByLogin(string login)
-        {
-            foreach (KeyValuePair<int, User> entry in DictOfUsers)
-            {
-                if (entry.Value.UserName == login)
-                {
-                    return entry.Value;
-                }
-            }
-            return null;
-        }
-        [HttpPost]
-        [ProducesResponseType (StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [HttpGet("{username}", Name = "GetUser")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType (StatusCodes.Status200OK)]
-        public IActionResult Post([FromBody] UsersAPIRequest data)
+        public async Task<IActionResult> Get(string username)
         {
-            Console.WriteLine("<Users>: Поступил POST-запрос");
-            if (data == null)
+            Console.WriteLine($"Поступил запрос на получение пользователя {username}");
+            var user = await SQLUsers.Get(username);
+
+            if (user != null)
             {
-                Console.WriteLine("<Users>: Данные повреждены");
-                return BadRequest();
+                Console.WriteLine(user);
+                user.PasswordHash = "";
+                return Ok(user);
             }
-            switch (data.Action)
+            else
             {
-                case "signin":
-                    User? tmp = FindByLogin(data.User.UserName);
-                    if (tmp == null)
-                    {
-                        Console.WriteLine($"<Users>: Пользователя не существует");
-                        return NotFound();
-                    }
-                    if (tmp.PasswordHash == data.User.PasswordHash)
-                    {
-                        Console.WriteLine("<Users> Успешная авторизация");
-                        Console.WriteLine("<Users>: Данные о пользователе\n" + data.User);
-                        return Ok();
-                    }
-                    else
-                    {
-                        Console.WriteLine($"<Users>: Неверный пароль");
-                        return Unauthorized();
-                    }
-                case "signup":
-                    data.User.Id = DictOfUsers.Count;
-                    if (FindByLogin(data.User.UserName) == null)
-                    {
-                        DictOfUsers.Add(data.User.Id, data.User);
-                        Console.WriteLine($"<Users>: Пользователь #{data.User.Id} ({data.User.UserName}) успешно зарегистрирован!");
-                        Console.WriteLine("<Users>: Данные о пользователе\n" + data.User);
-                        return Ok();
-                    }
-                    else
-                    {
-                        Console.WriteLine($"<Users>: Пользователь {data.User.UserName} уже существует");
-                        return Unauthorized();
-                    }
-                default:
-                    Console.WriteLine($"<Users>: Неизвестное действие: {data.Action}");
-                    return BadRequest();
+                Console.WriteLine("Пользователь не найден!");
+                return NotFound();
             }
-        }
-        // PUT api/<Messenger>/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
-        {
         }
 
-        // DELETE api/<Messenger>/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
+        [HttpPost]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public async Task<IActionResult> SignUp([FromBody] User user)
         {
+            Console.WriteLine($"Получен запрос на регистрацию");
+            Console.WriteLine(user);
+
+            if (await SQLUsers.Exists(user.UserName))
+            {
+                Console.WriteLine($"Пользователь {user.UserName} уже существует!");
+                return Unauthorized();
+            }
+
+            if (await SQLUsers.Create(user))
+            {
+                Console.WriteLine($"Пользователь успешно создан!");
+                user.PasswordHash = "";
+                return CreatedAtRoute("GetUser", new { username = user.UserName }, user);
+            }
+
+            return BadRequest();
+        }
+
+        [HttpDelete("{id}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> Delete(int id)
+        {
+            Console.WriteLine($"Получен запрос на удаление пользователя #{id}");
+
+            if (await SQLUsers.UpdateRemoveState(id, true))
+            {
+                Console.WriteLine($"Пользователь успешно удален");
+                return NoContent();
+            }
+            else
+            {
+                Console.WriteLine($"Пользователь не найден!");
+                return NotFound();
+            }
+        }
+
+        [HttpPut]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> Update([FromBody] User user)
+        {
+            Console.WriteLine($"Получен запрос на обновление данных пользователя #{user.UserId}");
+            Console.WriteLine(user);
+
+            if (await SQLUsers.UpdateName(user))
+            {
+                Console.WriteLine("Данные успешно обновлены!");
+                return NoContent();
+            }
+
+            return NotFound();
         }
     }
 }

@@ -1,63 +1,83 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using MyMessenger;
-using Newtonsoft.Json;
-
-// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+using Server.SQLServer;
 
 namespace ASPCoreServer.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class Messages : ControllerBase
+    public class Messages : Controller
     {
-        // список сообщений
-        static readonly List<Message> ListOfMessages = new();
-
-        // GET: api/<Messenger>
-        [HttpGet]
-        public IEnumerable<string> Get()
+        [HttpPost("[action]")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public async Task<IActionResult> GetChats([FromBody] Server.Entities.GetChatsBody body)
         {
-            return new string[] { "value1", "value2" };
+            Console.WriteLine($"Запрос на получение чатов пользователя #{body.UserId}");
+            if (!await SQLUsers.Exists(body.UserId.ToString()))
+            {
+                Console.WriteLine($"Пользователя #{body.UserId} не существует!");
+                return Unauthorized();
+            }
+            var result = await SQLMessages.GetChats(body.UserId);
+            return Ok(result);
         }
 
-        // получение сообщений
-        // GET api/<Messenger>/5
-        [HttpGet("{id}")]
-        public string Get(int id)
+        [HttpPost("[action]")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetMessages([FromBody] Server.Entities.GetMessagesBody body)
         {
-            string output = "Not found";
-            if (id >= 0 && id < ListOfMessages.Count)
+            Console.WriteLine($"Запрос на получение пользователем {body.UserId} сообщений чата #{body.ChatId}");
+            if (!await SQLUsers.Exists(body.UserId.ToString()))
             {
-                output = JsonConvert.SerializeObject(ListOfMessages[id]);
+                Console.WriteLine($"Пользователя #{body.UserId} не существует!");
+                return Unauthorized();
             }
-            Console.WriteLine($"<Messages> Запрошено сообщение #{id} : {output}");
-            return output;
+            if (!await SQLMessages.ChatExists(body.ChatId))
+            {
+                Console.WriteLine($"Чата #{body.ChatId} не существует!");
+                return NotFound();
+            }
+            await SQLMessages.ReadAll(body.UserId, body.ChatId);
+            return Ok(await SQLMessages.GetMessages(body.UserId, body.ChatId));
         }
 
-        // отправка сообщений
-        // POST api/<Messenger>
-        [HttpPost]
-        public IActionResult Post([FromBody] Message msg)
+        [HttpPost("[action]")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> Send([FromBody] Server.Entities.Message body)
         {
-            if (msg == null)
+            Console.WriteLine("Запрос на отправку сообщения");
+            Console.WriteLine(body.ToString());
+            if (!await SQLUsers.Exists(body.SenderId.ToString()))
             {
-                return BadRequest();
+                Console.WriteLine($"Пользователя #{body.SenderId} не существует!");
+                return Unauthorized();
             }
-            ListOfMessages.Add(msg);
-            Console.WriteLine($"<Messages> Всего сообщений {ListOfMessages.Count} Посланное сообщение {msg}");
+            if (!await SQLMessages.ChatExists(body.ChatId) || 
+                !await SQLMessages.Send(body))
+            {
+                Console.WriteLine($"Чата #{body.ChatId} не существует!");
+                return NotFound();
+            }
             return Ok();
         }
-
-        // PUT api/<Messenger>/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
+        [HttpPost("[action]")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> CheckForNew([FromBody] Server.Entities.CheckForNewBody body)
         {
-        }
-
-        // DELETE api/<Messenger>/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
-        {
+            Console.WriteLine($"Обновление сообщений пользователя #{body.UserId}");
+            if (!await SQLUsers.Exists(body.UserId.ToString()))
+            {
+                Console.WriteLine($"Пользователя #{body.UserId} не существует!");
+                return Unauthorized();
+            }
+            return await SQLMessages.CheckForNew(body.UserId) ?
+                Ok() : NotFound();
         }
     }
 }

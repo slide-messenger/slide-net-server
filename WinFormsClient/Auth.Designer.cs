@@ -29,80 +29,87 @@
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Auth));
-            LabelLogin = new Label();
-            TBLogin = new TextBox();
             TBPassword = new TextBox();
-            PasswordTB = new Label();
+            label2 = new Label();
+            TBLogin = new TextBox();
+            label1 = new Label();
             ButtonLogin = new Button();
-            ButtonRegister = new Button();
+            LinkToRegistration = new LinkLabel();
             ButtonShowPass = new Button();
             SuspendLayout();
-            // 
-            // LabelLogin
-            // 
-            LabelLogin.AutoSize = true;
-            LabelLogin.Location = new Point(12, 21);
-            LabelLogin.Name = "LabelLogin";
-            LabelLogin.Size = new Size(52, 20);
-            LabelLogin.TabIndex = 0;
-            LabelLogin.Text = "Логин";
-            // 
-            // TBLogin
-            // 
-            TBLogin.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            TBLogin.Location = new Point(12, 44);
-            TBLogin.MaxLength = 20;
-            TBLogin.Name = "TBLogin";
-            TBLogin.Size = new Size(330, 27);
-            TBLogin.TabIndex = 1;
             // 
             // TBPassword
             // 
             TBPassword.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            TBPassword.Location = new Point(12, 101);
-            TBPassword.MaxLength = 20;
+            TBPassword.Font = new Font("Segoe UI", 10.2F, FontStyle.Regular, GraphicsUnit.Point);
+            TBPassword.Location = new Point(12, 90);
+            TBPassword.MaxLength = 32;
             TBPassword.Name = "TBPassword";
-            TBPassword.PasswordChar = '*';
-            TBPassword.Size = new Size(294, 27);
-            TBPassword.TabIndex = 3;
+            TBPassword.PasswordChar = '•';
+            TBPassword.Size = new Size(248, 30);
+            TBPassword.TabIndex = 7;
+            TBPassword.Text = "testtest";
             // 
-            // PasswordTB
+            // label2
             // 
-            PasswordTB.AutoSize = true;
-            PasswordTB.Location = new Point(12, 78);
-            PasswordTB.Name = "PasswordTB";
-            PasswordTB.Size = new Size(62, 20);
-            PasswordTB.TabIndex = 2;
-            PasswordTB.Text = "Пароль";
+            label2.AutoSize = true;
+            label2.Font = new Font("Segoe UI", 10.2F, FontStyle.Regular, GraphicsUnit.Point);
+            label2.Location = new Point(12, 64);
+            label2.Name = "label2";
+            label2.Size = new Size(69, 23);
+            label2.TabIndex = 6;
+            label2.Text = "Пароль";
+            // 
+            // TBLogin
+            // 
+            TBLogin.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            TBLogin.Font = new Font("Segoe UI", 10.2F, FontStyle.Regular, GraphicsUnit.Point);
+            TBLogin.Location = new Point(12, 31);
+            TBLogin.MaxLength = 32;
+            TBLogin.Name = "TBLogin";
+            TBLogin.Size = new Size(280, 30);
+            TBLogin.TabIndex = 5;
+            TBLogin.Text = "issstasevich";
+            // 
+            // label1
+            // 
+            label1.AutoSize = true;
+            label1.Font = new Font("Segoe UI", 10.2F, FontStyle.Regular, GraphicsUnit.Point);
+            label1.Location = new Point(12, 8);
+            label1.Name = "label1";
+            label1.Size = new Size(58, 23);
+            label1.TabIndex = 4;
+            label1.Text = "Логин";
             // 
             // ButtonLogin
             // 
-            ButtonLogin.Location = new Point(9, 147);
+            ButtonLogin.Font = new Font("Segoe UI", 10.2F, FontStyle.Regular, GraphicsUnit.Point);
+            ButtonLogin.Location = new Point(12, 150);
             ButtonLogin.Name = "ButtonLogin";
-            ButtonLogin.Size = new Size(170, 54);
-            ButtonLogin.TabIndex = 4;
+            ButtonLogin.Size = new Size(280, 61);
+            ButtonLogin.TabIndex = 8;
             ButtonLogin.Text = "Войти";
             ButtonLogin.UseVisualStyleBackColor = true;
             ButtonLogin.Click += ButtonLogin_Click;
             // 
-            // ButtonRegister
+            // LinkToRegistration
             // 
-            ButtonRegister.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            ButtonRegister.Location = new Point(185, 147);
-            ButtonRegister.Name = "ButtonRegister";
-            ButtonRegister.Size = new Size(157, 54);
-            ButtonRegister.TabIndex = 5;
-            ButtonRegister.Text = "Регистрация";
-            ButtonRegister.UseVisualStyleBackColor = true;
-            ButtonRegister.Click += ButtonRegister_Click;
+            LinkToRegistration.AutoSize = true;
+            LinkToRegistration.Location = new Point(196, 123);
+            LinkToRegistration.Name = "LinkToRegistration";
+            LinkToRegistration.Size = new Size(96, 20);
+            LinkToRegistration.TabIndex = 9;
+            LinkToRegistration.TabStop = true;
+            LinkToRegistration.Text = "Регистрация";
+            LinkToRegistration.LinkClicked += LinkToRegistration_LinkClicked;
             // 
             // ButtonShowPass
             // 
             ButtonShowPass.Image = (Image)resources.GetObject("ButtonShowPass.Image");
-            ButtonShowPass.Location = new Point(312, 101);
+            ButtonShowPass.Location = new Point(266, 90);
             ButtonShowPass.Name = "ButtonShowPass";
-            ButtonShowPass.Size = new Size(30, 27);
-            ButtonShowPass.TabIndex = 6;
+            ButtonShowPass.Size = new Size(26, 30);
+            ButtonShowPass.TabIndex = 10;
             ButtonShowPass.UseVisualStyleBackColor = true;
             ButtonShowPass.Click += ButtonShowPass_Click;
             // 
@@ -110,20 +117,21 @@
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(354, 213);
+            BackColor = SystemColors.Control;
+            ClientSize = new Size(304, 219);
             Controls.Add(ButtonShowPass);
-            Controls.Add(ButtonRegister);
+            Controls.Add(LinkToRegistration);
             Controls.Add(ButtonLogin);
             Controls.Add(TBPassword);
-            Controls.Add(PasswordTB);
+            Controls.Add(label2);
             Controls.Add(TBLogin);
-            Controls.Add(LabelLogin);
+            Controls.Add(label1);
             FormBorderStyle = FormBorderStyle.FixedSingle;
             Icon = (Icon)resources.GetObject("$this.Icon");
             MaximizeBox = false;
             Name = "Auth";
             StartPosition = FormStartPosition.CenterScreen;
-            Text = "Авторизация";
+            Text = "SlideMessenger";
             TopMost = true;
             FormClosed += Auth_FormClosed;
             Load += Auth_Load;
@@ -133,12 +141,12 @@
 
         #endregion
 
-        private Label LabelLogin;
-        private TextBox TBLogin;
         private TextBox TBPassword;
-        private Label PasswordTB;
+        private Label label2;
+        private TextBox TBLogin;
+        private Label label1;
         private Button ButtonLogin;
-        private Button ButtonRegister;
+        private LinkLabel LinkToRegistration;
         private Button ButtonShowPass;
     }
 }

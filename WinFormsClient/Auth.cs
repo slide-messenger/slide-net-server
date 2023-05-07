@@ -1,5 +1,6 @@
-﻿using MyMessenger;
+﻿using WinFormsClient;
 using System.Net;
+using WinFormsClient.Api;
 
 namespace WinFormsClient
 {
@@ -9,6 +10,12 @@ namespace WinFormsClient
         public Auth()
         {
             InitializeComponent();
+        }
+
+        public void MoveAuthData(string login, string password)
+        {
+            TBLogin.Text = login;
+            TBPassword.Text = password;
         }
 
         private async void ButtonLogin_Click(object sender, EventArgs e)
@@ -27,8 +34,8 @@ namespace WinFormsClient
                     "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
-            User user = new(login, Security.GetSHA256(password), DateTime.UtcNow);
-            HttpStatusCode res = await UsersAPI.SignIn(user);
+            Server.Entities.AuthData data = new(login, Security.GetSHA256(password));
+            HttpStatusCode res = await AuthApi.SignIn(data);
             switch (res)
             {
                 case HttpStatusCode.NotFound:
@@ -40,8 +47,8 @@ namespace WinFormsClient
                     "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     break;
                 case HttpStatusCode.OK:
-                    MainForm!.SwitchUser(login);
-                    DialogResult = DialogResult.OK;
+                    DialogResult = await MainForm!.UpdateUser(login) ?
+                        DialogResult.OK : DialogResult.Cancel;
                     break;
                 default:
                     MessageBox.Show("Неизвестная ошибка",
@@ -60,44 +67,16 @@ namespace WinFormsClient
 
         }
 
-        private async void ButtonRegister_Click(object sender, EventArgs e)
-        {
-            string login = TBLogin.Text;
-            if (login.Length == 0)
-            {
-                MessageBox.Show("Логин не может быть пустым",
-                    "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-            string password = TBPassword.Text;
-            if (password.Length < 8)
-            {
-                MessageBox.Show("Пароль должен содержать как минимум 8 символов",
-                    "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-            User user = new(login, Security.GetSHA256(password), DateTime.UtcNow);
-            HttpStatusCode res = await UsersAPI.SignUp(user);
-            switch (res)
-            {
-                case HttpStatusCode.Unauthorized:
-                    MessageBox.Show("Пользователь с таким логином уже зарегистрирован",
-                    "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    break;
-                case HttpStatusCode.OK:
-                    MessageBox.Show("Вы успешно зарегистрированы!",
-                        "Успешно", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    break;
-                default:
-                    MessageBox.Show("Неизвестная ошибка",
-                    "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    break;
-            }
-        }
-
         private void ButtonShowPass_Click(object sender, EventArgs e)
         {
-            TBPassword.PasswordChar = TBPassword.PasswordChar == '*' ? '\0' : '*';
+            TBPassword.PasswordChar = TBPassword.PasswordChar == '•' ? '\0' : '•';
+        }
+
+        private void LinkToRegistration_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            Hide();
+            MainForm!.RegistrationForm.MoveAuthData(TBLogin.Text, TBPassword.Text);
+            DialogResult = MainForm!.RegistrationForm.ShowDialog();
         }
     }
 }

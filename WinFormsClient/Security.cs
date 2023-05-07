@@ -8,7 +8,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MyMessenger
+namespace WinFormsClient
 {   
     public class Security
     {
@@ -20,7 +20,7 @@ namespace MyMessenger
             //Create the hash value from the array of bytes.
             byte[] hashValue = SHA256.HashData(messageBytes);
 
-            return Convert.ToHexString(hashValue);
+            return Convert.ToHexString(hashValue).ToLower();
         }
     }
 }
