@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Http.Json;
 using System.Text;
 using System.Threading.Tasks;
@@ -16,15 +17,21 @@ namespace WinFormsClient.GuiHandlers
         }
         public async Task<T?> ReadFromJson<T>(HttpResponseMessage response)
         {
-            if (!response.IsSuccessStatusCode)
+            switch(response.StatusCode)
             {
-                MainForm.RaiseErrorAndQuit(response.StatusCode.ToString());
-                return default;
+                case HttpStatusCode.OK:
+                    break;
+                case HttpStatusCode.ServiceUnavailable:
+                    MainForm.ShowErrorAsync();
+                    return default;
+                default:
+                    MainForm.ShowError(response.StatusCode.ToString());
+                    return default;
             }
             var result = await response.Content.ReadFromJsonAsync<T>();
             if (result is null)
             {
-                MainForm.RaiseErrorAndQuit("JsonConvertationFailed");
+                MainForm.ShowError("JsonConvertationFailed");
                 return default;
             }
             return result;

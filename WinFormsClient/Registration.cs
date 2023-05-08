@@ -28,7 +28,7 @@ namespace WinFormsClient
 
         private void LinkToAuth_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
-            MainForm!.AuthForm.MoveAuthData(TBUserName.Text, TBPassword.Text);
+            MainForm!.AuthForm!.MoveAuthData(TBUserName.Text, TBPassword.Text);
             DialogResult = DialogResult.Continue;
         }
 
@@ -76,6 +76,10 @@ namespace WinFormsClient
                 case HttpStatusCode.Created:
                     MessageBox.Show("Вы успешно зарегистрированы!",
                         "Успешно", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    break;
+                case HttpStatusCode.ServiceUnavailable:
+                    MessageBox.Show($"Сервер недоступен", "SlideMessenger",
+                        MessageBoxButtons.OK, MessageBoxIcon.Error);
                     break;
                 default:
                     MessageBox.Show("Неизвестная ошибка",

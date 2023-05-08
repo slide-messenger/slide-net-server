@@ -6,6 +6,8 @@ using System.Text;
 using System.Threading.Tasks;
 using WinFormsClient.Api;
 using Server.Entities;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.Tab;
+using Microsoft.VisualBasic;
 
 namespace WinFormsClient.GuiHandlers
 {
@@ -40,9 +42,29 @@ namespace WinFormsClient.GuiHandlers
                 await MessagesApi.GetMessages(MainForm.UsersHandler.CurrentUser.UserId, CurrentChatId)
                 );
             if (list is null) { return false; }
+            foreach (var msg in list)
+            {
+                msg.SendAt = msg.SendAt.ToLocalTime();
+            }
             CurrentMessages = list;
 
             return true;
+        }
+        public async Task<bool> Send(Server.Entities.Message msg)
+        {
+            using var res = await MessagesApi.Send(msg);
+            switch (res.StatusCode)
+            {
+                case HttpStatusCode.OK:
+                    return true;
+                case HttpStatusCode.ServiceUnavailable:
+                    MainForm.ShowErrorAsync();
+                    break;
+                default:
+                    MainForm.ShowErrorAsync(res.StatusCode.ToString());
+                    break;
+            }
+            return false;
         }
     }
 }

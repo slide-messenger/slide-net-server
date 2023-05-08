@@ -16,31 +16,31 @@ namespace WinFormsClient.Api
 
         public static async Task<HttpResponseMessage> GetChats(int userId)
         {
-            return await Client.SharedClient.PostAsJsonAsync(
+            return await Client.PostAsJsonAsync(
                ROUTE + "/getchats",
                new Server.Entities.GetChatsBody(userId));
         }
         public static async Task<HttpResponseMessage> GetMessages(int userId, int chatId)
         {
-            return await Client.SharedClient.PostAsJsonAsync(
+            return await Client.PostAsJsonAsync(
                ROUTE + "/getmessages",
                new Server.Entities.GetMessagesBody(userId, chatId));
         }
         public static async Task<HttpResponseMessage> GetMembers(int chatId)
         {
-            return await Client.SharedClient.PostAsJsonAsync(
+            return await Client.PostAsJsonAsync(
                ROUTE + "/getmessages",
                new Server.Entities.GetMembersBody(chatId));
         }
         public static async Task<HttpResponseMessage> Send(Server.Entities.Message message)
         {
-            return await Client.SharedClient.PostAsJsonAsync(
+            return await Client.PostAsJsonAsync(
                ROUTE + "/send",
                message);
         }
         public static async Task<HttpResponseMessage> CheckForNew(int userId)
         {
-            return await Client.SharedClient.PostAsJsonAsync(
+            return await Client.PostAsJsonAsync(
                ROUTE + "/checkfornew",
                new Server.Entities.CheckForNewBody(userId));
         }

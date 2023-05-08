@@ -33,8 +33,8 @@ namespace WinFormsClient
                 MessageBox.Show("Неверный пароль",
                     "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
-            }
-            Server.Entities.AuthData data = new(login, Security.GetSHA256(password));
+            }                
+            Server.Entities.AuthData data = new(login.ToLower(), Security.GetSHA256(password));
             HttpStatusCode res = await AuthApi.SignIn(data);
             switch (res)
             {
@@ -49,6 +49,10 @@ namespace WinFormsClient
                 case HttpStatusCode.OK:
                     DialogResult = await MainForm!.UpdateUser(login) ?
                         DialogResult.OK : DialogResult.Cancel;
+                    break;
+                case HttpStatusCode.ServiceUnavailable:
+                    MessageBox.Show("Сервер недоступен", "SlideMessenger", 
+                        MessageBoxButtons.OK, MessageBoxIcon.Error);
                     break;
                 default:
                     MessageBox.Show("Неизвестная ошибка",
@@ -75,7 +79,7 @@ namespace WinFormsClient
         private void LinkToRegistration_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
             Hide();
-            MainForm!.RegistrationForm.MoveAuthData(TBLogin.Text, TBPassword.Text);
+            MainForm!.RegistrationForm!.MoveAuthData(TBLogin.Text, TBPassword.Text);
             DialogResult = MainForm!.RegistrationForm.ShowDialog();
         }
     }

@@ -1,5 +1,0 @@
-Host localhost
-Port 5432
-Username postgres
-Password DP1u4Fo5OA90hfcvRq2K
-Database postgres

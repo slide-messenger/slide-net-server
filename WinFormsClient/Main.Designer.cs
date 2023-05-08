@@ -38,6 +38,7 @@
             LabelChatname = new Label();
             groupBox1 = new GroupBox();
             groupBox2 = new GroupBox();
+            LinkQuit = new LinkLabel();
             ButtonProfileInfo = new Button();
             LabelLastName = new Label();
             LabelFirstName = new Label();
@@ -99,7 +100,7 @@
             LBChats.Items.AddRange(new object[] { "Человек 1 (0)", "Человек 2 (0)", "Группа 1 (0)" });
             LBChats.Location = new Point(6, 29);
             LBChats.Name = "LBChats";
-            LBChats.Size = new Size(216, 473);
+            LBChats.Size = new Size(216, 449);
             LBChats.TabIndex = 7;
             LBChats.SelectedIndexChanged += LBChats_SelectedIndexChanged;
             // 
@@ -120,34 +121,47 @@
             groupBox1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left;
             groupBox1.Controls.Add(LBChats);
             groupBox1.Font = new Font("Segoe UI", 10.2F, FontStyle.Regular, GraphicsUnit.Point);
-            groupBox1.Location = new Point(12, 93);
+            groupBox1.Location = new Point(12, 117);
             groupBox1.Name = "groupBox1";
-            groupBox1.Size = new Size(228, 508);
+            groupBox1.Size = new Size(228, 484);
             groupBox1.TabIndex = 16;
             groupBox1.TabStop = false;
             groupBox1.Text = "Чаты";
             // 
             // groupBox2
             // 
+            groupBox2.Controls.Add(LinkQuit);
             groupBox2.Controls.Add(ButtonProfileInfo);
             groupBox2.Controls.Add(LabelLastName);
             groupBox2.Controls.Add(LabelFirstName);
             groupBox2.Font = new Font("Segoe UI", 10.2F, FontStyle.Regular, GraphicsUnit.Point);
             groupBox2.Location = new Point(12, 12);
             groupBox2.Name = "groupBox2";
-            groupBox2.Size = new Size(228, 75);
+            groupBox2.Size = new Size(228, 99);
             groupBox2.TabIndex = 8;
             groupBox2.TabStop = false;
             groupBox2.Text = "Мой профиль";
             // 
+            // LinkQuit
+            // 
+            LinkQuit.AutoSize = true;
+            LinkQuit.Location = new Point(6, 66);
+            LinkQuit.Name = "LinkQuit";
+            LinkQuit.Size = new Size(59, 23);
+            LinkQuit.TabIndex = 13;
+            LinkQuit.TabStop = true;
+            LinkQuit.Text = "Выход";
+            LinkQuit.LinkClicked += LinkQuit_LinkClicked;
+            // 
             // ButtonProfileInfo
             // 
             ButtonProfileInfo.Image = (Image)resources.GetObject("ButtonProfileInfo.Image");
-            ButtonProfileInfo.Location = new Point(177, 23);
+            ButtonProfileInfo.Location = new Point(182, 25);
             ButtonProfileInfo.Name = "ButtonProfileInfo";
-            ButtonProfileInfo.Size = new Size(45, 43);
+            ButtonProfileInfo.Size = new Size(40, 41);
             ButtonProfileInfo.TabIndex = 12;
             ButtonProfileInfo.UseVisualStyleBackColor = true;
+            ButtonProfileInfo.Click += ButtonProfileInfo_Click;
             // 
             // LabelLastName
             // 
@@ -220,8 +234,6 @@
         private RichTextBox RTBMessages;
         private RichTextBox RTBTypeMessage;
         private System.Windows.Forms.Timer UpdateTimer;
-        private ListBox LBUsers;
-        private Label LabelContacts;
         private ListBox LBChats;
         private Label LabelChatname;
         private GroupBox groupBox1;
@@ -231,5 +243,6 @@
         private Label LabelFirstName;
         private GroupBox groupBox3;
         private GroupBox groupBox4;
+        private LinkLabel LinkQuit;
     }
 }

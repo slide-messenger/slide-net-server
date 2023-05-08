@@ -23,14 +23,14 @@ namespace Server.Entities
         public bool RemoveState { get; set; } = false;
         public Message() { }
         public Message(int chatId, int messageId, int senderId, string content, 
-            DateTime? sendAt = null, DateTime? updatedAt = null, bool removeState = false, int globalMessageId = 0)
+            DateTime sendAt, DateTime? updatedAt = null, bool removeState = false, int globalMessageId = 0)
         {
             GlobalMessageId = globalMessageId;
             ChatId = chatId;
             MessageId = messageId;
             SenderId = senderId;
             Content = content;
-            SendAt = sendAt ?? DateTime.MinValue;
+            SendAt = sendAt;
             UpdatedAt = updatedAt ?? DateTime.MinValue;
             RemoveState = removeState;
         }

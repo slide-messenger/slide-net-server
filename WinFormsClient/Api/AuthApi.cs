@@ -15,7 +15,7 @@ namespace WinFormsClient.Api
         private const string ROUTE = "api/auth";
         public static async Task<HttpStatusCode> SignIn(Server.Entities.AuthData data)
         {
-            return (await Client.SharedClient.PostAsJsonAsync(ROUTE, data)).StatusCode;
+            return (await Client.PostAsJsonAsync(ROUTE, data)).StatusCode;
         }
     }
 }

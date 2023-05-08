@@ -10,8 +10,8 @@ namespace WinFormsClient
 {
     public partial class Main : Form
     {
-        public readonly Auth AuthForm;
-        public readonly Registration RegistrationForm;
+        public Auth? AuthForm;
+        public Registration? RegistrationForm;
 
         public readonly GeneralGui GeneralHandler;
         public readonly UsersGui UsersHandler;
@@ -20,20 +20,35 @@ namespace WinFormsClient
         public Main()
         {
             InitializeComponent();
-            AuthForm = new() { MainForm = this };
-            RegistrationForm = new() { MainForm = this };
+
             GeneralHandler = new(this);
             UsersHandler = new(this);
             MessagesHandler = new(this);
         }
         public async void QuitUser()
         {
+            UpdateTimer.Stop();
+
+            UsersHandler.CurrentUser = new();
+            MessagesHandler.CurrentChatId = 0;
+            MessagesHandler.ChatIds.Clear();
+            MessagesHandler.Chats.Clear();
             LBChats.Items.Clear();
             RTBTypeMessage.Clear();
             RTBMessages.Clear();
-            UpdateTimer.Stop();
 
+            if (AuthForm is null || AuthForm.IsDisposed)
+            {
+                AuthForm = new() { MainForm = this };
+            }
+            if (RegistrationForm is null || RegistrationForm.IsDisposed)
+            {
+                RegistrationForm = new() { MainForm = this };
+            }
+
+            Hide();
             DialogResult res = AuthForm.ShowDialog();
+
             while (res != DialogResult.OK)
             {
                 if (res != DialogResult.Continue)
@@ -44,20 +59,27 @@ namespace WinFormsClient
                 res = AuthForm.ShowDialog();
             }
 
+            Show();
             AuthForm.Close();
             if (!await UpdateUser()) { return; }
             if (!await UpdateChats()) { return; }
             UpdateTimer.Enabled = true;
         }
-        public void RaiseErrorAndQuit(string description = "")
+        public void ShowError(string desc = "Сервер недоступен!")
         {
             UpdateTimer.Stop();
-            if (MessageBox.Show($"Произошла ошибка. Код: {description}",
+            if (MessageBox.Show($"Произошла ошибка. Код: {desc}",
                 "SlideMessenger", MessageBoxButtons.OK, MessageBoxIcon.Error) ==
                 DialogResult.OK)
             {
                 QuitUser();
             }
+        }
+        public void ShowErrorAsync(string desc = "Сервер недоступен!")
+        {
+            UpdateTimer.Stop();
+            LabelChatname.Text = desc;
+            LabelChatname.ForeColor = Color.Red;
         }
         public async Task<bool> UpdateUser(string? username = null)
         {
@@ -68,6 +90,7 @@ namespace WinFormsClient
             UsersHandler.CurrentUser = user;
             LabelFirstName.Text = UsersHandler.CurrentUser.FirstName;
             LabelLastName.Text = UsersHandler.CurrentUser.LastName;
+            LabelChatname.ForeColor = DefaultForeColor;
             LabelChatname.Text = "Выберите чат";
 
             return true;
@@ -104,6 +127,9 @@ namespace WinFormsClient
                     }
                 }
 
+                RTBMessages.SelectionStart = RTBMessages.TextLength;
+                RTBMessages.ScrollToCaret();
+
                 LabelChatname.Text = MessagesHandler.
                     Chats[MessagesHandler.CurrentChatId].ChatName;
 
@@ -116,44 +142,46 @@ namespace WinFormsClient
         {
             var content = RTBTypeMessage.Text;
             if (content.Length == 0 || MessagesHandler.CurrentChatId == 0) { return; }
-            var body = new Server.Entities.Message
+            if (await MessagesHandler.Send(new Server.Entities.Message
             (
                 MessagesHandler.CurrentChatId,
                 0,
                 UsersHandler.CurrentUser.UserId,
-                content
-            );
-
-            var res = await MessagesApi.Send(body);
-            if (res.IsSuccessStatusCode)
+                content,
+                DateTime.UtcNow)))
             {
                 RTBTypeMessage.Clear();
                 await UpdateMessages();
                 await UpdateChats();
             }
-            else
-            {
-                RaiseErrorAndQuit(res.StatusCode.ToString());
-            }
         }
 
         private void UpdateTimer_Tick(object sender, EventArgs e)
         {
+            var self = (System.Windows.Forms.Timer)sender;
             var get = new Func<Task>(async () =>
             {
-                var res = await MessagesApi.CheckForNew(UsersHandler.CurrentUser.UserId);
+                self.Stop();
+                using var res = await MessagesApi.CheckForNew(UsersHandler.CurrentUser.UserId);
                 switch (res.StatusCode)
                 {
                     case HttpStatusCode.OK:
-                        await UpdateMessages();
-                        await UpdateChats();
+                        if (!await UpdateMessages() || !await UpdateChats())
+                        {
+                            ShowErrorAsync("Не удалось обновить сообщения");
+                            return;
+                        }
                         break;
                     case HttpStatusCode.NotFound:
                         break;
+                    case HttpStatusCode.ServiceUnavailable:
+                        ShowErrorAsync();
+                        return;
                     default:
-                        RaiseErrorAndQuit(res.StatusCode.ToString());
-                        break;
+                        ShowError(res.StatusCode.ToString());
+                        return;
                 }
+                self.Start();
             });
             get.Invoke();
         }
@@ -186,6 +214,17 @@ namespace WinFormsClient
             {
                 self.Clear();
             }
+        }
+
+        private void LinkQuit_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            QuitUser();
+        }
+
+        private void ButtonProfileInfo_Click(object sender, EventArgs e)
+        {
+            MessageBox.Show(UsersHandler.CurrentUser.ToString(), "Мой профиль", MessageBoxButtons.OK,
+                MessageBoxIcon.Information);
         }
     }
 }

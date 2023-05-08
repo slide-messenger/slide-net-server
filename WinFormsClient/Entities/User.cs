@@ -44,11 +44,10 @@ namespace Server.Entities
         }
         public override string ToString()
         {
-            string output = $"User #{UserId} ({UserName})\n";
-            output += $"Full name: {FirstName} {LastName}\n";
-            output += $"Registrated at: {RegDate}\n";
-            output += $"Is disactivated: {RemoveState}\n";
-            output += $"Password hash: {PasswordHash}";
+            string output = $@"Имя: {FirstName} {LastName}
+Имя пользователя: {UserName}
+Зарегистрирован: {RegDate}
+Твой ID: {UserId}";
             return output;
         }
     }
