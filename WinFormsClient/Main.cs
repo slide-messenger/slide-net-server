@@ -110,7 +110,7 @@ namespace WinFormsClient
         }
         private async Task<bool> UpdateMessages()
         {
-            if (MessagesHandler.CurrentChatId == 0) { return false; }
+            if (MessagesHandler.CurrentChatId == 0) { return true; }
             RTBMessages.Clear();
             if (await MessagesHandler.UpdateMessages())
             {
@@ -162,11 +162,14 @@ namespace WinFormsClient
             var get = new Func<Task>(async () =>
             {
                 self.Stop();
-                using var res = await MessagesApi.CheckForNew(UsersHandler.CurrentUser.UserId);
-                switch (res.StatusCode)
+                var res = await MessagesApi.CheckForNew(new Server.Bodies.CheckForNewBody(
+                    UsersHandler.CurrentUser.UserId,
+                    MessagesHandler.CurrentChatId
+                    ));
+                switch(res.StatusCode)
                 {
                     case HttpStatusCode.OK:
-                        if (!await UpdateMessages() || !await UpdateChats())
+                        if (!await UpdateMessages())
                         {
                             ShowErrorAsync("Не удалось обновить сообщения");
                             return;
@@ -178,7 +181,29 @@ namespace WinFormsClient
                         ShowErrorAsync();
                         return;
                     default:
-                        ShowError(res.StatusCode.ToString());
+                        ShowErrorAsync(res.StatusCode.ToString());
+                        return;
+                }
+                res = await MessagesApi.CheckForNew(new Server.Bodies.CheckForNewBody(
+                    UsersHandler.CurrentUser.UserId,
+                    0
+                    ));
+                switch (res.StatusCode)
+                {
+                    case HttpStatusCode.OK:
+                        if (!await UpdateChats())
+                        {
+                            ShowErrorAsync("Не удалось обновить список чатов");
+                            return;
+                        }
+                        break;
+                    case HttpStatusCode.NotFound:
+                        break;
+                    case HttpStatusCode.ServiceUnavailable:
+                        ShowErrorAsync();
+                        return;
+                    default:
+                        ShowErrorAsync(res.StatusCode.ToString());
                         return;
                 }
                 self.Start();

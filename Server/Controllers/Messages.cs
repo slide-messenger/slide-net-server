@@ -76,7 +76,7 @@ namespace ASPCoreServer.Controllers
                 Console.WriteLine($"Пользователя #{body.UserId} не существует!");
                 return Unauthorized();
             }
-            return await SQLMessages.CheckForNew(body.UserId) ?
+            return await SQLMessages.CheckForNew(body.UserId, body.ChatId) ?
                 Ok() : NotFound();
         }
     }

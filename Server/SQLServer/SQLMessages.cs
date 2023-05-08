@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Logging;
 using Npgsql;
+using System.Diagnostics;
+using System.Diagnostics.Eventing.Reader;
 using System.Net;
 using System.Reflection;
 
@@ -107,9 +109,14 @@ $@"SELECT *
                 }
             }
 
-            foreach(var msg in result)
+            Dictionary<int, Entities.User?> cache = new();
+            foreach (var msg in result)
             {
-                var user = await SQLUsers.Get(msg.SenderId.ToString());
+                if (!cache.ContainsKey(msg.SenderId))
+                {
+                    cache[msg.SenderId] = await SQLUsers.Get(msg.SenderId.ToString());
+                }
+                var user = cache[msg.SenderId];
                 msg.Sender = (user == null || user.RemoveState) ?
                     "DELETED " : (user.FirstName + " " + user.LastName);
             }
@@ -136,9 +143,12 @@ $@"INSERT INTO {MESSAGE_TABLE}(cid, mid, sid, content, send_at)
             }
             return true;
         }
-        public static async Task<bool> CheckForNew(int uid)
+        public static async Task<bool> CheckForNew(int uid, int cid)
         {
-            string query =
+            string query;
+            if (cid == 0)
+            {
+                query =
 $@"SELECT EXISTS 
 	(SELECT cm.cid
 		FROM {MEMBER_TABLE} AS cm
@@ -146,7 +156,19 @@ $@"SELECT EXISTS
 			ON cm.cid = c.cid AND
 				cm.uid = {uid} AND 
 				cm.mid < c.mid);";
-            await using (var reader = await SQLServer.ExecuteReader(query))
+            }
+            else
+            {
+                query = $@"SELECT EXISTS 
+	(SELECT cm.cid
+		FROM {MEMBER_TABLE} AS cm
+			JOIN {CHAT_TABLE} AS c
+			ON cm.cid = c.cid AND
+                cm.cid = {cid} AND
+				cm.uid = {uid} AND 
+				cm.mid < c.mid);";
+            }
+                await using (var reader = await SQLServer.ExecuteReader(query))
             {
                 if (await reader.ReadAsync())
                 {

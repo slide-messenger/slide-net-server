@@ -18,19 +18,19 @@ namespace WinFormsClient.Api
         {
             return await Client.PostAsJsonAsync(
                ROUTE + "/getchats",
-               new Server.Entities.GetChatsBody(userId));
+               new Server.Bodies.GetChatsBody(userId));
         }
         public static async Task<HttpResponseMessage> GetMessages(int userId, int chatId)
         {
             return await Client.PostAsJsonAsync(
                ROUTE + "/getmessages",
-               new Server.Entities.GetMessagesBody(userId, chatId));
+               new Server.Bodies.GetMessagesBody(userId, chatId));
         }
         public static async Task<HttpResponseMessage> GetMembers(int chatId)
         {
             return await Client.PostAsJsonAsync(
                ROUTE + "/getmessages",
-               new Server.Entities.GetMembersBody(chatId));
+               new Server.Bodies.GetMembersBody(chatId));
         }
         public static async Task<HttpResponseMessage> Send(Server.Entities.Message message)
         {
@@ -38,11 +38,11 @@ namespace WinFormsClient.Api
                ROUTE + "/send",
                message);
         }
-        public static async Task<HttpResponseMessage> CheckForNew(int userId)
+        public static async Task<HttpResponseMessage> CheckForNew(Server.Bodies.CheckForNewBody body)
         {
             return await Client.PostAsJsonAsync(
                ROUTE + "/checkfornew",
-               new Server.Entities.CheckForNewBody(userId));
+               body);
         }
     }
 }
