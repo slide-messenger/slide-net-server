@@ -10,7 +10,7 @@ namespace ASPCoreServer.Controllers
         [HttpPost("[action]")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<IActionResult> GetChats([FromBody] Server.Entities.GetChatsBody body)
+        public async Task<IActionResult> GetChats([FromBody] Server.Bodies.GetChatsBody body)
         {
             Console.WriteLine($"Запрос на получение чатов пользователя #{body.UserId}");
             if (!await SQLUsers.Exists(body.UserId.ToString()))
@@ -26,7 +26,7 @@ namespace ASPCoreServer.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> GetMessages([FromBody] Server.Entities.GetMessagesBody body)
+        public async Task<IActionResult> GetMessages([FromBody] Server.Bodies.GetMessagesBody body)
         {
             Console.WriteLine($"Запрос на получение пользователем {body.UserId} сообщений чата #{body.ChatId}");
             if (!await SQLUsers.Exists(body.UserId.ToString()))
@@ -68,7 +68,7 @@ namespace ASPCoreServer.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> CheckForNew([FromBody] Server.Entities.CheckForNewBody body)
+        public async Task<IActionResult> CheckForNew([FromBody] Server.Bodies.CheckForNewBody body)
         {
             Console.WriteLine($"Обновление сообщений пользователя #{body.UserId}");
             if (!await SQLUsers.Exists(body.UserId.ToString()))

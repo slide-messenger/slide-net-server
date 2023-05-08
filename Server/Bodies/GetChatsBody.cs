@@ -1,4 +1,4 @@
-﻿namespace Server.Entities
+﻿namespace Server.Bodies
 {
     public class GetChatsBody
     {

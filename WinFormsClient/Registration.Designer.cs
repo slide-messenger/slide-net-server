@@ -94,7 +94,7 @@
             TBPassword.MaxLength = 32;
             TBPassword.Name = "TBPassword";
             TBPassword.PasswordChar = '•';
-            TBPassword.Size = new Size(266, 30);
+            TBPassword.Size = new Size(255, 30);
             TBPassword.TabIndex = 7;
             // 
             // label3
@@ -135,7 +135,7 @@
             TBRepeatPassword.MaxLength = 32;
             TBRepeatPassword.Name = "TBRepeatPassword";
             TBRepeatPassword.PasswordChar = '•';
-            TBRepeatPassword.Size = new Size(266, 30);
+            TBRepeatPassword.Size = new Size(255, 30);
             TBRepeatPassword.TabIndex = 11;
             // 
             // label5
@@ -173,9 +173,9 @@
             // ButtonShowPass
             // 
             ButtonShowPass.Image = (Image)resources.GetObject("ButtonShowPass.Image");
-            ButtonShowPass.Location = new Point(284, 207);
+            ButtonShowPass.Location = new Point(273, 207);
             ButtonShowPass.Name = "ButtonShowPass";
-            ButtonShowPass.Size = new Size(26, 29);
+            ButtonShowPass.Size = new Size(37, 29);
             ButtonShowPass.TabIndex = 14;
             ButtonShowPass.UseVisualStyleBackColor = true;
             ButtonShowPass.Click += ButtonShowPass_Click;
@@ -183,9 +183,9 @@
             // ButtonShowRepeatPass
             // 
             ButtonShowRepeatPass.Image = (Image)resources.GetObject("ButtonShowRepeatPass.Image");
-            ButtonShowRepeatPass.Location = new Point(284, 264);
+            ButtonShowRepeatPass.Location = new Point(273, 264);
             ButtonShowRepeatPass.Name = "ButtonShowRepeatPass";
-            ButtonShowRepeatPass.Size = new Size(26, 29);
+            ButtonShowRepeatPass.Size = new Size(37, 29);
             ButtonShowRepeatPass.TabIndex = 15;
             ButtonShowRepeatPass.UseVisualStyleBackColor = true;
             ButtonShowRepeatPass.Click += ButtonShowRepeatPass_Click;

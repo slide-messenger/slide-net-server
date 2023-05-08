@@ -46,7 +46,7 @@
             TBPassword.MaxLength = 32;
             TBPassword.Name = "TBPassword";
             TBPassword.PasswordChar = '•';
-            TBPassword.Size = new Size(248, 30);
+            TBPassword.Size = new Size(234, 30);
             TBPassword.TabIndex = 7;
             TBPassword.Text = "testtest";
             // 
@@ -106,9 +106,9 @@
             // ButtonShowPass
             // 
             ButtonShowPass.Image = (Image)resources.GetObject("ButtonShowPass.Image");
-            ButtonShowPass.Location = new Point(266, 90);
+            ButtonShowPass.Location = new Point(252, 90);
             ButtonShowPass.Name = "ButtonShowPass";
-            ButtonShowPass.Size = new Size(26, 30);
+            ButtonShowPass.Size = new Size(40, 30);
             ButtonShowPass.TabIndex = 10;
             ButtonShowPass.UseVisualStyleBackColor = true;
             ButtonShowPass.Click += ButtonShowPass_Click;

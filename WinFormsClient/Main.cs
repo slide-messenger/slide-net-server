@@ -5,6 +5,8 @@ using WinFormsClient.GuiHandlers;
 using Server.Entities;
 using System.Collections.Generic;
 using System;
+using System.Security.Cryptography;
+using static System.Windows.Forms.LinkLabel;
 
 namespace WinFormsClient
 {
@@ -162,49 +164,53 @@ namespace WinFormsClient
             var get = new Func<Task>(async () =>
             {
                 self.Stop();
-                var res = await MessagesApi.CheckForNew(new Server.Bodies.CheckForNewBody(
+                using (var res = await MessagesApi.CheckForNew(new Server.Bodies.CheckForNewBody(
                     UsersHandler.CurrentUser.UserId,
                     MessagesHandler.CurrentChatId
-                    ));
-                switch(res.StatusCode)
+                    )))
                 {
-                    case HttpStatusCode.OK:
-                        if (!await UpdateMessages())
-                        {
-                            ShowErrorAsync("Не удалось обновить сообщения");
+                    switch (res.StatusCode)
+                    {
+                        case HttpStatusCode.OK:
+                            if (!await UpdateMessages())
+                            {
+                                ShowErrorAsync("Не удалось обновить сообщения");
+                                return;
+                            }
+                            break;
+                        case HttpStatusCode.NotFound:
+                            break;
+                        case HttpStatusCode.ServiceUnavailable:
+                            ShowErrorAsync();
                             return;
-                        }
-                        break;
-                    case HttpStatusCode.NotFound:
-                        break;
-                    case HttpStatusCode.ServiceUnavailable:
-                        ShowErrorAsync();
-                        return;
-                    default:
-                        ShowErrorAsync(res.StatusCode.ToString());
-                        return;
+                        default:
+                            ShowErrorAsync(res.StatusCode.ToString());
+                            return;
+                    }
                 }
-                res = await MessagesApi.CheckForNew(new Server.Bodies.CheckForNewBody(
+                using (var res = await MessagesApi.CheckForNew(new Server.Bodies.CheckForNewBody(
                     UsersHandler.CurrentUser.UserId,
                     0
-                    ));
-                switch (res.StatusCode)
+                    )))
                 {
-                    case HttpStatusCode.OK:
-                        if (!await UpdateChats())
-                        {
-                            ShowErrorAsync("Не удалось обновить список чатов");
+                    switch (res.StatusCode)
+                    {
+                        case HttpStatusCode.OK:
+                            if (!await UpdateChats())
+                            {
+                                ShowErrorAsync("Не удалось обновить список чатов");
+                                return;
+                            }
+                            break;
+                        case HttpStatusCode.NotFound:
+                            break;
+                        case HttpStatusCode.ServiceUnavailable:
+                            ShowErrorAsync();
                             return;
-                        }
-                        break;
-                    case HttpStatusCode.NotFound:
-                        break;
-                    case HttpStatusCode.ServiceUnavailable:
-                        ShowErrorAsync();
-                        return;
-                    default:
-                        ShowErrorAsync(res.StatusCode.ToString());
-                        return;
+                        default:
+                            ShowErrorAsync(res.StatusCode.ToString());
+                            return;
+                    }
                 }
                 self.Start();
             });
@@ -250,6 +256,51 @@ namespace WinFormsClient
         {
             MessageBox.Show(UsersHandler.CurrentUser.ToString(), "Мой профиль", MessageBoxButtons.OK,
                 MessageBoxIcon.Information);
+        }
+
+        private void ButtonJoinChat_Click(object sender, EventArgs e)
+        {
+            using var dlg = new InputBox("Введите ссылку на чат:");
+            if (dlg.ShowDialog() == DialogResult.OK)
+            {
+                var link = dlg.Result;
+                MessageBox.Show(link);
+            }
+        }
+
+        private void ButtonCreateChat_Click(object sender, EventArgs e)
+        {
+            using var dlg = new InputBox("Введите название чата:");
+            if (dlg.ShowDialog() == DialogResult.OK)
+            {
+                var name = dlg.Result;
+                MessageBox.Show(name);
+            }
+        }
+
+        private void ButtonGetLink_Click(object sender, EventArgs e)
+        {
+            if (MessagesHandler.CurrentChatId == 0)
+            {
+                MessageBox.Show("Чат не выбран!",
+                "SlideMessenger", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+            var chat = MessagesHandler.Chats[MessagesHandler.CurrentChatId];
+            string link;
+            if (chat.SecondId == 0)
+            {
+                link = $"cid={chat.ChatId}";
+                MessageBox.Show($"Ссылка на чат скопирована в буфер обмена:\n{link}", "Получить ссылку",
+                MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            else
+            {
+                link = $"uid={(UsersHandler.CurrentUser.UserId == chat.FirstId ? chat.SecondId : chat.FirstId)}";
+                MessageBox.Show($"Ссылка на собеседника скопирована в буфер обмена:\n{link}", "Получить ссылку",
+                MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            Clipboard.SetText(link);
         }
     }
 }

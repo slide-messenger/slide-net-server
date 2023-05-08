@@ -37,12 +37,15 @@
             LBChats = new ListBox();
             LabelChatname = new Label();
             groupBox1 = new GroupBox();
+            ButtonCreateChat = new Button();
+            ButtonJoinChat = new Button();
             groupBox2 = new GroupBox();
             LinkQuit = new LinkLabel();
             ButtonProfileInfo = new Button();
             LabelLastName = new Label();
             LabelFirstName = new Label();
             groupBox3 = new GroupBox();
+            ButtonGetLink = new Button();
             groupBox4 = new GroupBox();
             groupBox1.SuspendLayout();
             groupBox2.SuspendLayout();
@@ -66,9 +69,9 @@
             // 
             RTBMessages.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             RTBMessages.Font = new Font("Segoe UI", 10.2F, FontStyle.Regular, GraphicsUnit.Point);
-            RTBMessages.Location = new Point(6, 40);
+            RTBMessages.Location = new Point(6, 51);
             RTBMessages.Name = "RTBMessages";
-            RTBMessages.Size = new Size(812, 464);
+            RTBMessages.Size = new Size(812, 453);
             RTBMessages.TabIndex = 3;
             RTBMessages.Text = "";
             // 
@@ -100,7 +103,7 @@
             LBChats.Items.AddRange(new object[] { "Человек 1 (0)", "Человек 2 (0)", "Группа 1 (0)" });
             LBChats.Location = new Point(6, 29);
             LBChats.Name = "LBChats";
-            LBChats.Size = new Size(216, 449);
+            LBChats.Size = new Size(216, 402);
             LBChats.TabIndex = 7;
             LBChats.SelectedIndexChanged += LBChats_SelectedIndexChanged;
             // 
@@ -109,9 +112,9 @@
             LabelChatname.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             LabelChatname.BackColor = SystemColors.Window;
             LabelChatname.Font = new Font("Segoe UI", 10.2F, FontStyle.Regular, GraphicsUnit.Point);
-            LabelChatname.Location = new Point(6, 14);
+            LabelChatname.Location = new Point(0, 14);
             LabelChatname.Name = "LabelChatname";
-            LabelChatname.Size = new Size(812, 23);
+            LabelChatname.Size = new Size(772, 34);
             LabelChatname.TabIndex = 14;
             LabelChatname.Text = "Выберите чат";
             LabelChatname.TextAlign = ContentAlignment.MiddleCenter;
@@ -119,6 +122,8 @@
             // groupBox1
             // 
             groupBox1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left;
+            groupBox1.Controls.Add(ButtonCreateChat);
+            groupBox1.Controls.Add(ButtonJoinChat);
             groupBox1.Controls.Add(LBChats);
             groupBox1.Font = new Font("Segoe UI", 10.2F, FontStyle.Regular, GraphicsUnit.Point);
             groupBox1.Location = new Point(12, 117);
@@ -127,6 +132,28 @@
             groupBox1.TabIndex = 16;
             groupBox1.TabStop = false;
             groupBox1.Text = "Чаты";
+            // 
+            // ButtonCreateChat
+            // 
+            ButtonCreateChat.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
+            ButtonCreateChat.Image = (Image)resources.GetObject("ButtonCreateChat.Image");
+            ButtonCreateChat.Location = new Point(6, 437);
+            ButtonCreateChat.Name = "ButtonCreateChat";
+            ButtonCreateChat.Size = new Size(152, 41);
+            ButtonCreateChat.TabIndex = 15;
+            ButtonCreateChat.UseVisualStyleBackColor = true;
+            ButtonCreateChat.Click += ButtonCreateChat_Click;
+            // 
+            // ButtonJoinChat
+            // 
+            ButtonJoinChat.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
+            ButtonJoinChat.Image = (Image)resources.GetObject("ButtonJoinChat.Image");
+            ButtonJoinChat.Location = new Point(164, 437);
+            ButtonJoinChat.Name = "ButtonJoinChat";
+            ButtonJoinChat.Size = new Size(58, 41);
+            ButtonJoinChat.TabIndex = 14;
+            ButtonJoinChat.UseVisualStyleBackColor = true;
+            ButtonJoinChat.Click += ButtonJoinChat_Click;
             // 
             // groupBox2
             // 
@@ -186,6 +213,7 @@
             // groupBox3
             // 
             groupBox3.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            groupBox3.Controls.Add(ButtonGetLink);
             groupBox3.Controls.Add(RTBMessages);
             groupBox3.Controls.Add(LabelChatname);
             groupBox3.Location = new Point(246, 12);
@@ -193,6 +221,17 @@
             groupBox3.Size = new Size(824, 512);
             groupBox3.TabIndex = 17;
             groupBox3.TabStop = false;
+            // 
+            // ButtonGetLink
+            // 
+            ButtonGetLink.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            ButtonGetLink.Image = (Image)resources.GetObject("ButtonGetLink.Image");
+            ButtonGetLink.Location = new Point(778, 15);
+            ButtonGetLink.Name = "ButtonGetLink";
+            ButtonGetLink.Size = new Size(40, 34);
+            ButtonGetLink.TabIndex = 15;
+            ButtonGetLink.UseVisualStyleBackColor = true;
+            ButtonGetLink.Click += ButtonGetLink_Click;
             // 
             // groupBox4
             // 
@@ -244,5 +283,8 @@
         private GroupBox groupBox3;
         private GroupBox groupBox4;
         private LinkLabel LinkQuit;
+        private Button ButtonCreateChat;
+        private Button ButtonJoinChat;
+        private Button ButtonGetLink;
     }
 }

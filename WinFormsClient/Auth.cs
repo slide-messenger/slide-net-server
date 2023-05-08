@@ -33,7 +33,7 @@ namespace WinFormsClient
                 MessageBox.Show("Неверный пароль",
                     "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
-            }                
+            }
             Server.Entities.AuthData data = new(login.ToLower(), Security.GetSHA256(password));
             HttpStatusCode res = await AuthApi.SignIn(data);
             switch (res)
@@ -51,7 +51,7 @@ namespace WinFormsClient
                         DialogResult.OK : DialogResult.Cancel;
                     break;
                 case HttpStatusCode.ServiceUnavailable:
-                    MessageBox.Show("Сервер недоступен", "SlideMessenger", 
+                    MessageBox.Show("Сервер недоступен", "SlideMessenger",
                         MessageBoxButtons.OK, MessageBoxIcon.Error);
                     break;
                 default:

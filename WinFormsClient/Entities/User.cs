@@ -46,8 +46,8 @@ namespace Server.Entities
         {
             string output = $@"Имя: {FirstName} {LastName}
 Имя пользователя: {UserName}
-Зарегистрирован: {RegDate}
-Твой ID: {UserId}";
+Личная ссылка: uid={UserId}
+Зарегистрирован: {RegDate}";
             return output;
         }
     }
