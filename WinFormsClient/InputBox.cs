@@ -16,15 +16,27 @@ namespace WinFormsClient
         {
             get { return TBResult.Text; }
         }
-        public InputBox(string title = "")
+        public InputBox()
         {
             InitializeComponent();
+        }
 
+        public DialogResult Execute(string title = "", int? maxSize = null)
+        {
             LabelTitle.Text = title;
+            TBResult.MaxLength = maxSize ?? 32767;
+
+            return ShowDialog();
         }
 
         private void ButtonOK_Click(object sender, EventArgs e)
         {
+            if (string.IsNullOrWhiteSpace(TBResult.Text))
+            {
+                MessageBox.Show("Заполните поле", "Ошибка",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
             DialogResult = DialogResult.OK;
             Close();
         }

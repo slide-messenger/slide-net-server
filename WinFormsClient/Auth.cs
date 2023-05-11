@@ -20,7 +20,7 @@ namespace WinFormsClient
 
         private async void ButtonLogin_Click(object sender, EventArgs e)
         {
-            string login = TBLogin.Text;
+            string login = TBLogin.Text.ToLower();
             if (login.Length == 0)
             {
                 MessageBox.Show("Логин не может быть пустым",
@@ -34,8 +34,8 @@ namespace WinFormsClient
                     "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
-            Server.Entities.AuthData data = new(login.ToLower(), Security.GetSHA256(password));
-            HttpStatusCode res = await AuthApi.SignIn(data);
+            Server.Entities.AuthData data = new(login, Security.GetSHA256(password));
+            HttpStatusCode res = await UsersApi.SignIn(data);
             switch (res)
             {
                 case HttpStatusCode.NotFound:
@@ -51,7 +51,7 @@ namespace WinFormsClient
                         DialogResult.OK : DialogResult.Cancel;
                     break;
                 case HttpStatusCode.ServiceUnavailable:
-                    MessageBox.Show("Сервер недоступен", "SlideMessenger",
+                    MessageBox.Show("Сервер недоступен", "Ошибка",
                         MessageBoxButtons.OK, MessageBoxIcon.Error);
                     break;
                 default:

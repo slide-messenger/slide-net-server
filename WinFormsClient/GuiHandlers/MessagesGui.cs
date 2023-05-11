@@ -8,6 +8,7 @@ using WinFormsClient.Api;
 using Server.Entities;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.Tab;
 using Microsoft.VisualBasic;
+using Server.Bodies;
 
 namespace WinFormsClient.GuiHandlers
 {
@@ -20,6 +21,48 @@ namespace WinFormsClient.GuiHandlers
 
         public MessagesGui(Main main) : base(main)
         {
+        }
+        public async Task<int> CheckForUnreadChats()
+        {
+            using var res = await MessagesApi.CheckForNew(new CheckForNewBody(
+                    MainForm.UsersHandler.CurrentUser.UserId,
+                    0
+                    ));
+            switch (res.StatusCode)
+            {
+                case HttpStatusCode.OK:
+                    return 1;
+                case HttpStatusCode.NoContent:
+                    return 0;
+                case HttpStatusCode.ServiceUnavailable:
+                    MainForm.ShowErrorAsync();
+                    break;
+                default:
+                    MainForm.ShowErrorAsync(res.StatusCode.ToString());
+                    break;
+            }
+            return 2;
+        }
+        public async Task<int> CheckForNewMessages()
+        {
+            using var res = await MessagesApi.CheckForNew(new CheckForNewBody(
+                    MainForm.UsersHandler.CurrentUser.UserId,
+                    CurrentChatId
+                    ));
+            switch (res.StatusCode)
+            {
+                case HttpStatusCode.OK:
+                    return 1;
+                case HttpStatusCode.NoContent:
+                    return 0;
+                case HttpStatusCode.ServiceUnavailable:
+                    MainForm.ShowErrorAsync();
+                    break;
+                default:
+                    MainForm.ShowErrorAsync(res.StatusCode.ToString());
+                    break;
+            }
+            return 2;
         }
         public async Task<bool> UpdateChats()
         {
@@ -49,6 +92,75 @@ namespace WinFormsClient.GuiHandlers
             CurrentMessages = list;
 
             return true;
+        }
+        public async Task<bool> StartDialog(int secondId)
+        {
+            using var res = await MessagesApi.CreateChat(new Chat(
+                MainForm.UsersHandler.CurrentUser.UserId,
+                "",
+                secondId
+                ));
+            switch (res.StatusCode)
+            {
+                case HttpStatusCode.OK:
+                    return true;
+                case HttpStatusCode.NotFound:
+                    MainForm.ShowError("Пользователь не найден");
+                    break;
+                case HttpStatusCode.ServiceUnavailable:
+                    MainForm.ShowErrorAsync();
+                    break;
+                default:
+                    MainForm.ShowErrorAsync(res.StatusCode.ToString());
+                    break;
+            }
+            return false;
+        }
+        public async Task<bool> CreateGroupChat(string chatName)
+        {
+            using var res = await MessagesApi.CreateChat(new Chat(
+                MainForm.UsersHandler.CurrentUser.UserId,
+                chatName
+                ));
+            switch (res.StatusCode)
+            {
+                case HttpStatusCode.OK:
+                    return true;
+                case HttpStatusCode.ServiceUnavailable:
+                    MainForm.ShowErrorAsync();
+                    break;
+                default:
+                    MainForm.ShowErrorAsync(res.StatusCode.ToString());
+                    break;
+            }
+            return false;
+        }
+        public async Task<bool> JoinChat(int cid)
+        {
+            using var res = await MessagesApi.JoinChat(new JoinChatBody(
+                    MainForm.UsersHandler.CurrentUser.UserId, cid));
+            switch (res.StatusCode)
+            {
+                case HttpStatusCode.OK:
+                    return true;
+                case HttpStatusCode.ServiceUnavailable:
+                    MainForm.ShowErrorAsync();
+                    break;
+                case HttpStatusCode.Conflict:
+                    MainForm.ShowError("Вы уже в этом чате");
+                    break;
+                case HttpStatusCode.Forbidden:
+                    MainForm.ShowError("Чат является приватным");
+                    break;
+                case HttpStatusCode.NotFound:
+                    MainForm.ShowError("Чат не найден");
+                    break;
+                default:
+                    MainForm.ShowErrorAsync(res.StatusCode.ToString());
+                    break;
+            }
+
+            return false;
         }
         public async Task<bool> Send(Server.Entities.Message msg)
         {

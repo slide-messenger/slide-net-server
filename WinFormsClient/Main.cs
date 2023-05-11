@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System;
 using System.Security.Cryptography;
 using static System.Windows.Forms.LinkLabel;
+using Server.Bodies;
 
 namespace WinFormsClient
 {
@@ -67,7 +68,12 @@ namespace WinFormsClient
             if (!await UpdateChats()) { return; }
             UpdateTimer.Enabled = true;
         }
-        public void ShowError(string desc = "Сервер недоступен!")
+        public void ShowError(string desc = "Сервер недоступен")
+        {
+            MessageBox.Show(this, $"{desc}",
+                "SlideMessenger", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+        public void ShowCriticalError(string desc = "Сервер недоступен!")
         {
             UpdateTimer.Stop();
             if (MessageBox.Show($"Произошла ошибка. Код: {desc}",
@@ -85,11 +91,11 @@ namespace WinFormsClient
         }
         public async Task<bool> UpdateUser(string? username = null)
         {
-            var user = await GeneralHandler.ReadFromJson<User>(
-                UsersApi.Get(username ?? UsersHandler.CurrentUser.UserId.ToString()));
-            if (user is null) { return false; }
+            if (!await UsersHandler.UpdateCurrentUser(username))
+            {
+                return false;
+            }
 
-            UsersHandler.CurrentUser = user;
             LabelFirstName.Text = UsersHandler.CurrentUser.FirstName;
             LabelLastName.Text = UsersHandler.CurrentUser.LastName;
             LabelChatname.ForeColor = DefaultForeColor;
@@ -143,7 +149,7 @@ namespace WinFormsClient
         private async void SendButton_Click(object sender, EventArgs e)
         {
             var content = RTBTypeMessage.Text;
-            if (content.Length == 0 || MessagesHandler.CurrentChatId == 0) { return; }
+            if (string.IsNullOrWhiteSpace(content) || MessagesHandler.CurrentChatId == 0) { return; }
             if (await MessagesHandler.Send(new Server.Entities.Message
             (
                 MessagesHandler.CurrentChatId,
@@ -154,7 +160,6 @@ namespace WinFormsClient
             {
                 RTBTypeMessage.Clear();
                 await UpdateMessages();
-                await UpdateChats();
             }
         }
 
@@ -164,53 +169,27 @@ namespace WinFormsClient
             var get = new Func<Task>(async () =>
             {
                 self.Stop();
-                using (var res = await MessagesApi.CheckForNew(new Server.Bodies.CheckForNewBody(
-                    UsersHandler.CurrentUser.UserId,
-                    MessagesHandler.CurrentChatId
-                    )))
+                var res = await MessagesHandler.CheckForNewMessages();
+                switch (res)
                 {
-                    switch (res.StatusCode)
-                    {
-                        case HttpStatusCode.OK:
-                            if (!await UpdateMessages())
-                            {
-                                ShowErrorAsync("Не удалось обновить сообщения");
-                                return;
-                            }
-                            break;
-                        case HttpStatusCode.NotFound:
-                            break;
-                        case HttpStatusCode.ServiceUnavailable:
-                            ShowErrorAsync();
-                            return;
-                        default:
-                            ShowErrorAsync(res.StatusCode.ToString());
-                            return;
-                    }
+                    case 0:
+                        break;
+                    case 1:
+                        await UpdateMessages();
+                        break;
+                    case 2:
+                        return;
                 }
-                using (var res = await MessagesApi.CheckForNew(new Server.Bodies.CheckForNewBody(
-                    UsersHandler.CurrentUser.UserId,
-                    0
-                    )))
+                res = await MessagesHandler.CheckForUnreadChats();
+                switch (res)
                 {
-                    switch (res.StatusCode)
-                    {
-                        case HttpStatusCode.OK:
-                            if (!await UpdateChats())
-                            {
-                                ShowErrorAsync("Не удалось обновить список чатов");
-                                return;
-                            }
-                            break;
-                        case HttpStatusCode.NotFound:
-                            break;
-                        case HttpStatusCode.ServiceUnavailable:
-                            ShowErrorAsync();
-                            return;
-                        default:
-                            ShowErrorAsync(res.StatusCode.ToString());
-                            return;
-                    }
+                    case 0:
+                        break;
+                    case 1:
+                        await UpdateChats();
+                        break;
+                    case 2:
+                        return;
                 }
                 self.Start();
             });
@@ -258,23 +237,53 @@ namespace WinFormsClient
                 MessageBoxIcon.Information);
         }
 
-        private void ButtonJoinChat_Click(object sender, EventArgs e)
+        private async void ButtonJoinChat_Click(object sender, EventArgs e)
         {
-            using var dlg = new InputBox("Введите ссылку на чат:");
-            if (dlg.ShowDialog() == DialogResult.OK)
+            using var dlg = new InputBox();
+            if (dlg.Execute("Введите ссылку на чат:", 64) == DialogResult.OK)
             {
                 var link = dlg.Result;
-                MessageBox.Show(link);
+                var isDialog = link.StartsWith("uid=");
+                var isGroupChat = link.StartsWith("cid=");
+                if (link.Length < 5 || (!isDialog && !isGroupChat))
+                {
+                    MessageBox.Show("Неверный формат ссылки",
+                        "SliderMessenger",
+                        MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+                if (!int.TryParse(link[4..], out int id))
+                {
+                    MessageBox.Show("Неверный формат ссылки",
+                        "SliderMessenger",
+                        MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+                if (isDialog)
+                {
+                    if (await MessagesHandler.StartDialog(id))
+                    {
+                        await UpdateChats();
+                    }
+                    return;
+                }
+                if (await MessagesHandler.JoinChat(id))
+                {
+                    await UpdateChats();
+                }
             }
         }
 
-        private void ButtonCreateChat_Click(object sender, EventArgs e)
+        private async void ButtonCreateChat_Click(object sender, EventArgs e)
         {
-            using var dlg = new InputBox("Введите название чата:");
-            if (dlg.ShowDialog() == DialogResult.OK)
+            using var dlg = new InputBox();
+            if (dlg.Execute("Придумайте название чата: ", 32) == DialogResult.OK)
             {
-                var name = dlg.Result;
-                MessageBox.Show(name);
+                if (await MessagesHandler.CreateGroupChat(dlg.Result))
+                {
+                    await UpdateMessages();
+                    await UpdateChats();
+                }
             }
         }
 
@@ -301,6 +310,13 @@ namespace WinFormsClient
                 MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             Clipboard.SetText(link);
+        }
+
+        private void ButtonCopyMyLink_Click(object sender, EventArgs e)
+        {
+            MessageBox.Show("Личная ссылка скопирована в буфер обмена", "Личная ссылка",
+                MessageBoxButtons.OK, MessageBoxIcon.Information);
+            Clipboard.SetText($"uid={UsersHandler.CurrentUser.UserId}");
         }
     }
 }

@@ -25,13 +25,13 @@ namespace WinFormsClient.GuiHandlers
                     MainForm.ShowErrorAsync();
                     return default;
                 default:
-                    MainForm.ShowError(response.StatusCode.ToString());
+                    MainForm.ShowErrorAsync(response.StatusCode.ToString());
                     return default;
             }
             var result = await response.Content.ReadFromJsonAsync<T>();
             if (result is null)
             {
-                MainForm.ShowError("JsonConvertationFailed");
+                MainForm.ShowErrorAsync("JsonConvertationFailed");
                 return default;
             }
             return result;

@@ -44,5 +44,17 @@ namespace WinFormsClient.Api
                ROUTE + "/checkfornew",
                body);
         }
+        public static async Task<HttpResponseMessage> CreateChat(Server.Entities.Chat body)
+        {
+            return await Client.PostAsJsonAsync(
+               ROUTE + "/createchat",
+               body);
+        }
+        public static async Task<HttpResponseMessage> JoinChat(Server.Bodies.JoinChatBody body)
+        {
+            return await Client.PostAsJsonAsync(
+               ROUTE + "/joinchat",
+               body);
+        }
     }
 }

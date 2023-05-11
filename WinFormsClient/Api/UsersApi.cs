@@ -16,15 +16,19 @@ namespace WinFormsClient.Api
         private const string ROUTE = "api/users";
         public static async Task<HttpResponseMessage> Get(string username)
         {
-            return await Client.GetAsync(ROUTE + "/" + username);
+            return await Client.GetAsync(ROUTE + "/get/" + username);
         }
         public static async Task<HttpResponseMessage> Get(int id)
         {
-            return await Client.GetAsync(ROUTE + "/" + id.ToString());
+            return await Client.GetAsync(ROUTE + "/get/" + id.ToString());
         }
-        public static async Task<HttpStatusCode> SignUp(Server.Entities.User user)
+        public static async Task<HttpStatusCode> SignUp(Server.Bodies.SignUpBody body)
         {
-            return (await Client.PostAsJsonAsync(ROUTE, user)).StatusCode;
+            return (await Client.PostAsJsonAsync(ROUTE + "/signup", body)).StatusCode;
+        }
+        public static async Task<HttpStatusCode> SignIn(Server.Entities.AuthData data)
+        {
+            return (await Client.PostAsJsonAsync(ROUTE + "/signin", data)).StatusCode;
         }
     }
 }

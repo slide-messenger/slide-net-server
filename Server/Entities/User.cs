@@ -15,20 +15,20 @@ namespace Server.Entities
         public string FirstName { get; set; } = string.Empty;
         public string LastName { get; set; } = string.Empty;
         public string UserName { get; set; } = string.Empty;
-        public string PasswordHash { get; set; } = string.Empty;
         public DateTime RegDate { get; set; } = DateTime.MinValue;
         public bool RemoveState { get; set; } = false;
         public User() { }
-        public User(string firstName, string lastName, string userName, string passwordHash,
+        public User(string firstName, string lastName, string userName,
             DateTime regDate, int userId = 0, bool removeState = false)
         {
             // если создаем нового пользователя
             if (userId == 0)
             {
+                firstName = firstName.ToLower();
+                lastName = lastName.ToLower();
                 FirstName = char.ToUpper(firstName[0]) + firstName[1..];
                 LastName = char.ToUpper(lastName[0]) + lastName[1..];
                 UserName = userName.ToLower();
-                PasswordHash = passwordHash.ToLower();
             }
             // если извлекаем из базы данных SQL
             else
@@ -36,7 +36,6 @@ namespace Server.Entities
                 FirstName = firstName;
                 LastName = lastName;
                 UserName = userName;
-                PasswordHash = passwordHash;
             }
             RegDate = regDate;
             UserId = userId;
@@ -44,11 +43,10 @@ namespace Server.Entities
         }
         public override string ToString()
         {
-            string output = $"User #{UserId} ({UserName})\n";
-            output += $"Full name: {FirstName} {LastName}\n";
-            output += $"Registrated at: {RegDate}\n";
-            output += $"Is disactivated: {RemoveState}\n";
-            output += $"Password hash: {PasswordHash}";
+            string output = $@"Имя: {FirstName} {LastName}
+Имя пользователя: {UserName}
+Личная ссылка: uid={UserId}
+Зарегистрирован: {RegDate}";
             return output;
         }
     }

@@ -69,7 +69,7 @@
             TBLogin.Name = "TBLogin";
             TBLogin.Size = new Size(280, 30);
             TBLogin.TabIndex = 5;
-            TBLogin.Text = "issstasevich";
+            TBLogin.Text = "ivanstasevich";
             // 
             // label1
             // 
@@ -132,7 +132,6 @@
             Name = "Auth";
             StartPosition = FormStartPosition.CenterScreen;
             Text = "SlideMessenger";
-            TopMost = true;
             FormClosed += Auth_FormClosed;
             Load += Auth_Load;
             ResumeLayout(false);

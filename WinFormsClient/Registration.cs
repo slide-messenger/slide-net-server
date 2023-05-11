@@ -58,15 +58,15 @@ namespace WinFormsClient
                     "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
-            string passwordHash = Security.GetSHA256(password);
-            Server.Entities.User user = new(
-                firstName,
-                lastName,
-                userName,
-                passwordHash,
-                DateTime.UtcNow
-            );
-            HttpStatusCode res = await UsersApi.SignUp(user);
+            HttpStatusCode res = await UsersApi.SignUp(new Server.Bodies.SignUpBody(
+                new Server.Entities.User(
+                    firstName,
+                    lastName,
+                    userName,
+                    DateTime.UtcNow
+                    ),
+                Security.GetSHA256(password)
+                ));
             switch (res)
             {
                 case HttpStatusCode.Unauthorized:
@@ -78,7 +78,7 @@ namespace WinFormsClient
                         "Успешно", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     break;
                 case HttpStatusCode.ServiceUnavailable:
-                    MessageBox.Show($"Сервер недоступен", "SlideMessenger",
+                    MessageBox.Show("Сервер недоступен", "Ошибка",
                         MessageBoxButtons.OK, MessageBoxIcon.Error);
                     break;
                 default:

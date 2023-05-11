@@ -47,6 +47,7 @@
             groupBox3 = new GroupBox();
             ButtonGetLink = new Button();
             groupBox4 = new GroupBox();
+            ButtonCopyMyLink = new Button();
             groupBox1.SuspendLayout();
             groupBox2.SuspendLayout();
             groupBox3.SuspendLayout();
@@ -157,6 +158,7 @@
             // 
             // groupBox2
             // 
+            groupBox2.Controls.Add(ButtonCopyMyLink);
             groupBox2.Controls.Add(LinkQuit);
             groupBox2.Controls.Add(ButtonProfileInfo);
             groupBox2.Controls.Add(LabelLastName);
@@ -183,9 +185,9 @@
             // ButtonProfileInfo
             // 
             ButtonProfileInfo.Image = (Image)resources.GetObject("ButtonProfileInfo.Image");
-            ButtonProfileInfo.Location = new Point(182, 25);
+            ButtonProfileInfo.Location = new Point(182, 22);
             ButtonProfileInfo.Name = "ButtonProfileInfo";
-            ButtonProfileInfo.Size = new Size(40, 41);
+            ButtonProfileInfo.Size = new Size(40, 34);
             ButtonProfileInfo.TabIndex = 12;
             ButtonProfileInfo.UseVisualStyleBackColor = true;
             ButtonProfileInfo.Click += ButtonProfileInfo_Click;
@@ -244,6 +246,16 @@
             groupBox4.TabIndex = 18;
             groupBox4.TabStop = false;
             // 
+            // ButtonCopyMyLink
+            // 
+            ButtonCopyMyLink.Image = (Image)resources.GetObject("ButtonCopyMyLink.Image");
+            ButtonCopyMyLink.Location = new Point(182, 61);
+            ButtonCopyMyLink.Name = "ButtonCopyMyLink";
+            ButtonCopyMyLink.Size = new Size(40, 34);
+            ButtonCopyMyLink.TabIndex = 14;
+            ButtonCopyMyLink.UseVisualStyleBackColor = true;
+            ButtonCopyMyLink.Click += ButtonCopyMyLink_Click;
+            // 
             // Main
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
@@ -286,5 +298,6 @@
         private Button ButtonCreateChat;
         private Button ButtonJoinChat;
         private Button ButtonGetLink;
+        private Button ButtonCopyMyLink;
     }
 }
