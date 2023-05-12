@@ -62,8 +62,7 @@ namespace WinFormsClient
                 new Server.Entities.User(
                     firstName,
                     lastName,
-                    userName,
-                    DateTime.UtcNow
+                    userName
                     ),
                 Security.GetSHA256(password)
                 ));

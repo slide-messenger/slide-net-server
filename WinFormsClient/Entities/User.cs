@@ -18,25 +18,20 @@ namespace Server.Entities
         public DateTime RegDate { get; set; } = DateTime.MinValue;
         public bool RemoveState { get; set; } = false;
         public User() { }
-        public User(string firstName, string lastName, string userName,
-            DateTime regDate, int userId = 0, bool removeState = false)
+        public User(string firstName, string lastName, string userName)
         {
-            // если создаем нового пользователя
-            if (userId == 0)
-            {
-                firstName = firstName.ToLower();
-                lastName = lastName.ToLower();
-                FirstName = char.ToUpper(firstName[0]) + firstName[1..];
-                LastName = char.ToUpper(lastName[0]) + lastName[1..];
-                UserName = userName.ToLower();
-            }
-            // если извлекаем из базы данных SQL
-            else
-            {
-                FirstName = firstName;
-                LastName = lastName;
-                UserName = userName;
-            }
+            firstName = firstName.ToLower();
+            lastName = lastName.ToLower();
+            FirstName = char.ToUpper(firstName[0]) + firstName[1..];
+            LastName = char.ToUpper(lastName[0]) + lastName[1..];
+            UserName = userName.ToLower();
+        }
+        public User(int userId, string firstName, string lastName, string userName,
+            DateTime regDate, bool removeState)
+        {
+            FirstName = firstName;
+            LastName = lastName;
+            UserName = userName;
             RegDate = regDate;
             UserId = userId;
             RemoveState = removeState;

@@ -20,17 +20,14 @@ namespace ASPCoreServer.Controllers
                 Console.WriteLine("Пользователь не найден");
                 return NotFound();
             }
-
             var user = await SQLUsers.Get(username);
             if (user is null)
             {
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
-
             Console.WriteLine(user);
             return Ok(user);
         }
-
         [HttpPost("[action]")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -39,22 +36,27 @@ namespace ASPCoreServer.Controllers
         {
             Console.WriteLine("Получен запрос на регистрацию");
             Console.WriteLine(body.User);
-
             if (await SQLUsers.Exists(body.User.UserName))
             {
                 Console.WriteLine($"Пользователь {body.User.UserName} уже существует!");
                 return Unauthorized();
             }
-
-            if (!await SQLUsers.Create(body.User, body.PasswordHash))
+            int id = await SQLUsers.Create(body.User, body.PasswordHash);
+            if (id <= 0)
             {
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
-
+            if (await SQLMessages.CreateChat(new Chat(
+                id,
+                ChatType.SavedMessages,
+                id
+                )) <= 0)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
             Console.WriteLine("Пользователь успешно создан!");
             return CreatedAtRoute("GetUser", new { username = body.User.UserName }, body.User);
         }
-
         [HttpPost("[action]")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -94,7 +96,6 @@ namespace ASPCoreServer.Controllers
                 return Ok(user);
             }
         }
-
         [HttpDelete("[action]/{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]

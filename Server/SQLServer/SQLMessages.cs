@@ -9,6 +9,7 @@ using System.Diagnostics;
 using System.Diagnostics.Eventing.Reader;
 using System.Net;
 using System.Reflection;
+using System.Security.Cryptography;
 
 namespace Server.SQLServer
 {
@@ -21,77 +22,89 @@ namespace Server.SQLServer
         private const string CHAT_CREATION_MSG = "created this chat";
         private const string USER_JOINED_MSG = "joined this chat";
         private const string DELETED_USER_NAME = "DELETED";
+        private const string SAVED_MESSAGES_NAME = "Saved Messages";
         
-        public static async Task<List<Chat>> GetChats(int uid)
+        private static async Task<string?> ResolveChatName(int uid, Chat chat)
+        {
+            switch (chat.Type)
+            {
+                case ChatType.DirectChat:
+                    var secondUser = await SQLUsers.Get(uid == chat.FirstId ?
+                    chat.SecondId : chat.FirstId);
+                    if (secondUser is null) { return null; }
+                    return secondUser.RemoveState ?
+                        DELETED_USER_NAME : (secondUser.FirstName + " " + secondUser.LastName);
+                case ChatType.SavedMessages:
+                    return SAVED_MESSAGES_NAME;
+                case ChatType.GroupChat:
+                    return chat.Name;
+                default:
+                    throw new NotImplementedException();
+            }
+        }
+        private static Chat GetChatFromReader(NpgsqlDataReader reader)
+        {
+            return new Chat
+                (
+                    reader.GetInt32(0),  // cid
+                    (ChatType)reader.GetInt32(1),  // type
+                    reader.GetInt32(2),  // first_uid
+                    reader.GetInt32(3),  // second_uid
+                    reader.GetInt32(4),  // last_mid
+                    reader.GetInt32(5),  // read_mid
+                    reader.GetString(6),  // name
+                    reader.GetDateTime(7)  // created_at
+                );
+        }
+        public static async Task<List<Chat>?> GetChats(int uid)
         {
             string query = 
-@$"SELECT c.cid, c.first_uid, c.second_uid, c.mid as last_mid, cm.mid AS read_mid, c.chatname
+@$"SELECT c.cid, c.type, c.first_uid, c.second_uid, c.mid as last_mid, cm.mid AS read_mid, c.name, c.created_at
 	FROM {CHAT_TABLE} AS c 
 		JOIN {MESSAGE_TABLE} AS m 
 		ON m.cid = c.cid AND m.mid = c.mid
 		
 		JOIN {MEMBER_TABLE} AS cm
 		ON c.cid = cm.cid AND cm.uid = {uid}
-	ORDER BY m.send_at DESC;";
+	ORDER BY m.sent_at DESC;";
             List<Chat> result = new ();
             await using (var reader = await SQLServer.ExecuteReader(query))
             {
                 while (await reader.ReadAsync())
                 {
-                    result.Add(new Chat
-                    (
-                        reader.GetInt32(1),
-                        reader.GetString(5),
-                        reader.GetInt32(2),
-                        reader.GetInt32(0),
-                        reader.GetInt32(3),
-                        reader.GetInt32(4)
-                    ));
+                    result.Add(GetChatFromReader(reader));
                 }
             }
 
             foreach (var chat in result)
             {
-                if (chat.SecondId != 0)
+                var name = await ResolveChatName(uid, chat);
+                if (name is null)
                 {
-                    var interlocutor = await SQLUsers.Get(uid == chat.FirstId ?
-                        chat.SecondId : chat.FirstId);
-                    chat.ChatName = (interlocutor is null || interlocutor.RemoveState) ? 
-                        DELETED_USER_NAME : (interlocutor.FirstName + " " + interlocutor.LastName);
+                    return null;
                 }
+                chat.Name = name;
             }
 
             return result;
         }
-        public static async Task<bool> ChatExists(int cid)
+        private static Message GetMessageFromReader(NpgsqlDataReader reader)
         {
-            string query = 
-@$"SELECT EXISTS 
-(SELECT * 
-    FROM {CHAT_TABLE}
-    WHERE cid = {cid});";
-            await using var reader = await SQLServer.ExecuteReader(query);
-            if (await reader.ReadAsync())
-            {
-                return reader.GetBoolean(0);
-            }
-            return false;
+            return new Message
+                (
+                    reader.GetInt32(0),
+                    reader.GetInt32(1),
+                    reader.GetInt32(2),
+                    reader.GetInt32(3),
+                    reader.GetString(4),
+                    reader.GetDateTime(5),
+                    reader.GetDateTime(6),
+                    reader.GetBoolean(7)
+               );
         }
-        public static async Task<bool> ReadAll(int uid, int cid)
+        public static async Task<List<Message>?> GetMessages(int cid)
         {
-            string query = 
-$@"UPDATE {MEMBER_TABLE}
-	SET mid = 
-	(SELECT mid 
-	 	FROM chat 
-	 	WHERE cid = {cid})
-	WHERE cid = {cid} AND
-		uid = {uid};";
-            return await SQLServer.ExecuteNonQuery(query) == 1;
-        }
-        public static async Task<List<Message>> GetMessages(int uid, int cid)
-        {
-            string query = 
+            string query =
 $@"SELECT * 
     FROM {MESSAGE_TABLE}
 	WHERE cid = {cid} AND
@@ -101,17 +114,7 @@ $@"SELECT *
             {
                 while (await reader.ReadAsync())
                 {
-                    result.Add(new Message
-                    (
-                        reader.GetInt32(1),
-                        reader.GetInt32(2),
-                        reader.GetInt32(3),
-                        reader.GetString(4),
-                        reader.GetDateTime(5),
-                        reader.GetDateTime(6),
-                        reader.GetBoolean(7),
-                        reader.GetInt32(0)
-                    ));
+                    result.Add(GetMessageFromReader(reader));
                 }
             }
 
@@ -123,7 +126,8 @@ $@"SELECT *
                     cache[msg.SenderId] = await SQLUsers.Get(msg.SenderId);
                 }
                 var user = cache[msg.SenderId];
-                msg.Sender = (user == null || user.RemoveState) ?
+                if (user is null) { return null; }
+                msg.Sender = user.RemoveState ?
                     DELETED_USER_NAME : (user.FirstName + " " + user.LastName);
             }
 
@@ -140,32 +144,25 @@ $@"UPDATE {CHAT_TABLE}
                 return false;
             }
             query =
-$@"INSERT INTO {MESSAGE_TABLE}(cid, mid, sid, content, send_at) 
+$@"INSERT INTO {MESSAGE_TABLE}(cid, mid, sid, content, sent_at) 
 	VALUES
-	({m.ChatId}, (SELECT mid FROM chat WHERE cid = {m.ChatId}), {m.SenderId}, '{m.Content}', '{m.SendAt:O}');";
+	({m.ChatId}, (SELECT mid FROM chat WHERE cid = {m.ChatId}), {m.SenderId}, '{m.Content}', '{m.SentAt:O}');";
             if (await SQLServer.ExecuteNonQuery(query) != 1)
             {
                 return false;
             }
             return true;
         }
-        public static async Task<bool> CheckForNew(int uid, int cid)
+        private static string GetCheckForNewQuery(int uid, int cid)
         {
-            string query;
-            if (cid == 0)
-            {
-                query =
+            return cid == 0 ?
 $@"SELECT EXISTS 
 	(SELECT cm.cid
 		FROM {MEMBER_TABLE} AS cm
 			JOIN {CHAT_TABLE} AS c
 			ON cm.cid = c.cid AND
 				cm.uid = {uid} AND 
-				cm.mid < c.mid);";
-            }
-            else
-            {
-                query = 
+				cm.mid < c.mid);" :
 $@"SELECT EXISTS 
 	(SELECT cm.cid
 		FROM {MEMBER_TABLE} AS cm
@@ -174,58 +171,78 @@ $@"SELECT EXISTS
                 cm.cid = {cid} AND
 				cm.uid = {uid} AND 
 				cm.mid < c.mid);";
-            }
-            await using var reader = await SQLServer.ExecuteReader(query);
-            if (await reader.ReadAsync())
+        }
+        public static async Task<bool> CheckForNew(int uid, int cid)
+        {
+            await using var reader = await SQLServer.ExecuteReader(GetCheckForNewQuery(uid, cid));
+            if (!await reader.ReadAsync())
             {
-                return reader.GetBoolean(0);
+                return false;
             }
-            return false;
+            return reader.GetBoolean(0);
+        }
+        public static string GetCreateChatQuery(Chat chat)
+        {
+            return chat.Type switch
+            {
+                ChatType.DirectChat or ChatType.SavedMessages =>
+$@"INSERT INTO {CHAT_TABLE}(type, first_uid, second_uid)
+    VALUES({(int)chat.Type}, {chat.FirstId}, {chat.SecondId}) RETURNING cid;",
+                ChatType.GroupChat =>
+$@"INSERT INTO {CHAT_TABLE}(type, first_uid, name)
+    VALUES({(int)chat.Type}, {chat.FirstId}, '{chat.Name}') RETURNING cid;",
+                _ => throw new NotImplementedException(),
+            };
+        }
+        public static string GetAddChatMembersQuery(Chat chat)
+        {
+            return chat.Type switch
+            {
+                ChatType.DirectChat =>
+$@"INSERT INTO {MEMBER_TABLE}(cid, uid)
+    VALUES
+    ({chat.ChatId}, {chat.FirstId}),
+    ({chat.ChatId}, {chat.SecondId});",
+                ChatType.GroupChat or ChatType.SavedMessages =>
+$@"INSERT INTO {MEMBER_TABLE}(cid, uid)
+    VALUES({chat.ChatId}, {chat.FirstId});",
+                _ => throw new NotImplementedException(),
+            };
+        }
+        public static bool CheckAffectedByChatCreationRows(Chat chat, int rowsAffected)
+        {
+            return chat.Type switch
+            {
+                ChatType.DirectChat => rowsAffected == 2,
+                ChatType.GroupChat or ChatType.SavedMessages => rowsAffected == 1,
+                _ => throw new NotImplementedException(),
+            };
         }
         public static async Task<int> CreateChat(Chat chat)
         {
-            string chat_query = chat.SecondId == 0 ?
-$@"INSERT INTO {CHAT_TABLE}(first_uid, chatname)
-    VALUES({chat.FirstId}, '{chat.ChatName}') RETURNING cid;" :
-$@"INSERT INTO {CHAT_TABLE}(first_uid, second_uid)
-    VALUES({chat.FirstId}, {chat.SecondId}) RETURNING cid;";
-            await using var reader = await SQLServer.ExecuteReader(chat_query);
-            int cid;
-            if (await reader.ReadAsync())
-            {
-                cid = reader.GetInt32(0);
-            }
-            else
+            await using var reader = await SQLServer.ExecuteReader(GetCreateChatQuery(chat));
+            if (!await reader.ReadAsync())
             {
                 return 0;
             }
-            string cm_query = chat.SecondId == 0 ?
-$@"INSERT INTO {MEMBER_TABLE}(cid, uid)
-    VALUES({cid}, {chat.FirstId});" :
-$@"INSERT INTO {MEMBER_TABLE}(cid, uid)
-    VALUES
-    ({cid}, {chat.FirstId}),
-    ({cid}, {chat.SecondId});";
-            int rowAffected = await SQLServer.ExecuteNonQuery(cm_query);
-            if (chat.SecondId == 0 && rowAffected != 1 ||
-                chat.SecondId != 0 && rowAffected != 2)
-            { 
-                return 0; 
-            }
-
-            if (!await Send(new Message(cid, 0, chat.FirstId, CHAT_CREATION_MSG, DateTime.UtcNow)))
+            chat.ChatId = reader.GetInt32(0);
+            if (!CheckAffectedByChatCreationRows(chat, 
+                await SQLServer.ExecuteNonQuery(GetAddChatMembersQuery(chat))))
             {
                 return 0;
             }
-
-            return cid;
+            if (!await Send(new Message(chat.ChatId, chat.FirstId, CHAT_CREATION_MSG, DateTime.UtcNow)))
+            {
+                return 0;
+            }
+            return chat.ChatId;
         }
         public static async Task<bool> JoinChat(int uid, int cid)
         {
             string query =
 $@"INSERT INTO {MEMBER_TABLE}(cid, uid)
     VALUES ({cid}, {uid});";
-            if (!await Send(new Message(cid, 0, uid, USER_JOINED_MSG, DateTime.UtcNow)))
+            if (!await Send(new Message(cid, uid, USER_JOINED_MSG, DateTime.UtcNow)))
             {
                 return false;
             }
@@ -240,30 +257,51 @@ $@"SELECT EXISTS
         WHERE cid = {cid} AND
             uid = {uid});";
             await using var reader = await SQLServer.ExecuteReader(query);
-            if (await reader.ReadAsync())
+            if (!await reader.ReadAsync())
             {
-                return reader.GetBoolean(0);
+                return false;
             }
-            return false;
+            return reader.GetBoolean(0);
         }
-        public static async Task<bool> IsDialog(int cid)
+        public static async Task<bool> ChatExists(int cid)
         {
             string query =
-$@"SELECT EXISTS
-	(SELECT 1
-		FROM {CHAT_TABLE}
-		WHERE cid = {cid} AND
-	 	second_uid != 0);";
+@$"SELECT EXISTS 
+(SELECT 1 
+    FROM {CHAT_TABLE}
+    WHERE cid = {cid});";
             await using var reader = await SQLServer.ExecuteReader(query);
-            if (await reader.ReadAsync())
+            if (!await reader.ReadAsync())
             {
-                return reader.GetBoolean(0);
+                return false;
             }
-            return false;
+            return reader.GetBoolean(0);
         }
-        public static async Task<bool> IsGroupChat(int cid)
+        public static async Task<bool> ReadAll(int uid, int cid)
         {
-            return !await IsDialog(cid);
+            string query =
+$@"UPDATE {MEMBER_TABLE}
+	SET mid = 
+	(SELECT mid 
+	 	FROM chat 
+	 	WHERE cid = {cid})
+	WHERE cid = {cid} AND
+		uid = {uid};";
+            return await SQLServer.ExecuteNonQuery(query) == 1;
+        }
+        public static async Task<ChatType?> GetChatType(int cid)
+        {
+            string query =
+$@"SELECT type
+    FROM {CHAT_TABLE}
+    WHERE cid = {cid}";
+            await using var reader = await SQLServer.ExecuteReader(query);
+            if (!await reader.ReadAsync())
+            {
+                return null;
+                
+            }
+            return (ChatType)reader.GetInt32(0);
         }
     }
 }

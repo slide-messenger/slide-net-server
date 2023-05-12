@@ -87,7 +87,7 @@ namespace WinFormsClient.GuiHandlers
             if (list is null) { return false; }
             foreach (var msg in list)
             {
-                msg.SendAt = msg.SendAt.ToLocalTime();
+                msg.SentAt = msg.SentAt.ToLocalTime();
             }
             CurrentMessages = list;
 
@@ -97,7 +97,8 @@ namespace WinFormsClient.GuiHandlers
         {
             using var res = await MessagesApi.CreateChat(new Chat(
                 MainForm.UsersHandler.CurrentUser.UserId,
-                "",
+                MainForm.UsersHandler.CurrentUser.UserId == secondId ?
+                ChatType.SavedMessages : ChatType.DirectChat,
                 secondId
                 ));
             switch (res.StatusCode)
@@ -106,6 +107,9 @@ namespace WinFormsClient.GuiHandlers
                     return true;
                 case HttpStatusCode.NotFound:
                     MainForm.ShowError("Пользователь не найден");
+                    break;
+                case HttpStatusCode.Conflict:
+                    MainForm.ShowError("Вы уже состоите в чате");
                     break;
                 case HttpStatusCode.ServiceUnavailable:
                     MainForm.ShowErrorAsync();
@@ -120,12 +124,20 @@ namespace WinFormsClient.GuiHandlers
         {
             using var res = await MessagesApi.CreateChat(new Chat(
                 MainForm.UsersHandler.CurrentUser.UserId,
+                ChatType.GroupChat,
+                0,
                 chatName
                 ));
             switch (res.StatusCode)
             {
                 case HttpStatusCode.OK:
                     return true;
+                case HttpStatusCode.NotFound:
+                    MainForm.ShowError("Пользователь не найден");
+                    break;
+                case HttpStatusCode.Conflict:
+                    MainForm.ShowError("Вы уже состоите в чате");
+                    break;
                 case HttpStatusCode.ServiceUnavailable:
                     MainForm.ShowErrorAsync();
                     break;
@@ -149,7 +161,7 @@ namespace WinFormsClient.GuiHandlers
                 case HttpStatusCode.Conflict:
                     MainForm.ShowError("Вы уже в этом чате");
                     break;
-                case HttpStatusCode.Forbidden:
+                case HttpStatusCode.UnprocessableEntity:
                     MainForm.ShowError("Чат является приватным");
                     break;
                 case HttpStatusCode.NotFound:
@@ -159,7 +171,6 @@ namespace WinFormsClient.GuiHandlers
                     MainForm.ShowErrorAsync(res.StatusCode.ToString());
                     break;
             }
-
             return false;
         }
         public async Task<bool> Send(Server.Entities.Message msg)

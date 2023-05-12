@@ -11,6 +11,7 @@ namespace ASPCoreServer.Controllers
         [HttpPost("[action]")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetChats([FromBody] Server.Bodies.GetChatsBody body)
         {
             Console.WriteLine($"Запрос на получение чатов пользователя #{body.UserId}");
@@ -19,9 +20,10 @@ namespace ASPCoreServer.Controllers
                 Console.WriteLine($"Пользователя #{body.UserId} не существует!");
                 return Unauthorized();
             }
-            return Ok(await SQLMessages.GetChats(body.UserId));
+            var res = await SQLMessages.GetChats(body.UserId);
+            return res is null ? 
+                StatusCode(StatusCodes.Status500InternalServerError) : Ok(res);
         }
-
         [HttpPost("[action]")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -45,9 +47,10 @@ namespace ASPCoreServer.Controllers
                 Console.WriteLine("Не удалось установить статус прочитано сообщений!");
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
-            return Ok(await SQLMessages.GetMessages(body.UserId, body.ChatId));
+            var res = await SQLMessages.GetMessages(body.ChatId);
+            return res is null ? 
+                StatusCode(StatusCodes.Status500InternalServerError) : Ok(res);
         }
-
         [HttpPost("[action]")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -85,15 +88,15 @@ namespace ASPCoreServer.Controllers
             return await SQLMessages.CheckForNew(body.UserId, body.ChatId) ?
                 Ok() : NoContent();
         }
-
         [HttpPost("[action]")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> CreateChat([FromBody] Server.Entities.Chat body)
         {
-            Console.WriteLine($"Запрос на создание чата: {body.ChatName}");
+            Console.WriteLine($"Запрос на создание чата пользователем {body.FirstId}");
             if (!await SQLUsers.Exists(body.FirstId))
             {
                 Console.WriteLine($"Пользователя #{body.FirstId} не существует!");
@@ -104,6 +107,11 @@ namespace ASPCoreServer.Controllers
                 Console.WriteLine($"Пользователя #{body.SecondId} не существует!");
                 return NotFound();
             }
+            if (body.FirstId == body.SecondId)
+            {
+                Console.WriteLine($"Такой чат уже существует");
+                return Conflict();
+            }
             int id = await SQLMessages.CreateChat(body);
             return id > 0 ?
                Ok(id) : StatusCode(StatusCodes.Status500InternalServerError);
@@ -111,9 +119,9 @@ namespace ASPCoreServer.Controllers
         [HttpPost("[action]")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
+        [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> JoinChat([FromBody] Server.Bodies.JoinChatBody body)
         {
@@ -128,10 +136,12 @@ namespace ASPCoreServer.Controllers
                 Console.WriteLine($"Чата #{body.ChatId} не существует!");
                 return NotFound();
             }
-            if (!await SQLMessages.IsGroupChat(body.ChatId))
+            var type = await SQLMessages.GetChatType(body.ChatId);
+            if (type == Server.Entities.ChatType.DirectChat || 
+                type == Server.Entities.ChatType.SavedMessages)
             {
                 Console.WriteLine($"Попытка присоединиться к личному чату");
-                return Forbid();
+                return UnprocessableEntity();
             }
             if (await SQLMessages.IsUserInChat(body.UserId, body.ChatId))
             {

@@ -139,7 +139,7 @@ namespace WinFormsClient
                 RTBMessages.ScrollToCaret();
 
                 LabelChatname.Text = MessagesHandler.
-                    Chats[MessagesHandler.CurrentChatId].ChatName;
+                    Chats[MessagesHandler.CurrentChatId].Name;
 
                 return true;
             }
@@ -153,7 +153,6 @@ namespace WinFormsClient
             if (await MessagesHandler.Send(new Server.Entities.Message
             (
                 MessagesHandler.CurrentChatId,
-                0,
                 UsersHandler.CurrentUser.UserId,
                 content,
                 DateTime.UtcNow)))
