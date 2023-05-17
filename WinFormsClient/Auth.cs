@@ -1,6 +1,7 @@
 ﻿using WinFormsClient;
 using System.Net;
 using WinFormsClient.Api;
+using System.Xml.Linq;
 
 namespace WinFormsClient
 {
@@ -68,7 +69,8 @@ namespace WinFormsClient
 
         private void Auth_Load(object sender, EventArgs e)
         {
-
+            GBAuth.Left = (ClientSize.Width - GBAuth.Width) / 2;
+            GBAuth.Top = (ClientSize.Height - GBAuth.Height) / 2;
         }
 
         private void ButtonShowPass_Click(object sender, EventArgs e)
@@ -81,6 +83,11 @@ namespace WinFormsClient
             Hide();
             MainForm!.RegistrationForm!.MoveAuthData(TBLogin.Text, TBPassword.Text);
             DialogResult = MainForm!.RegistrationForm.ShowDialog();
+        }
+
+        private void label1_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }

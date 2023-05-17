@@ -101,5 +101,35 @@ namespace WinFormsClient
         {
 
         }
+
+        private void TBRepeatPassword_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label3_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void Registration_Load(object sender, EventArgs e)
+        {
+            GBName.Left = (ClientSize.Width - GBName.Width) / 2;
+            GBName.Top = (ClientSize.Height - GBName.Height) / 2;
+            GBPassword.Left = (ClientSize.Width - GBPassword.Width) / 2;
+            GBPassword.Top = (ClientSize.Height - GBPassword.Height) / 2;
+        }
+
+        private void ButtonNext_Click(object sender, EventArgs e)
+        {
+            GBName.Hide();
+            GBPassword.Show();
+        }
+
+        private void ButtonPrev_Click(object sender, EventArgs e)
+        {
+            GBPassword.Hide();
+            GBName.Show();
+        }
     }
 }

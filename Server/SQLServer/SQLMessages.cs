@@ -303,5 +303,23 @@ $@"SELECT type
             }
             return (ChatType)reader.GetInt32(0);
         }
+        public static async Task<bool> DialogExists(int uid1, int uid2)
+        {
+            string query =
+$@"SELECT EXISTS (
+	SELECT 1
+		FROM chat
+		WHERE type = {(int)ChatType.DirectChat} AND 
+			(first_uid = {uid1} AND second_uid = {uid2}) OR
+			(first_uid = {uid2} AND second_uid = {uid1})
+);";
+            await using var reader = await SQLServer.ExecuteReader(query);
+            if (!await reader.ReadAsync())
+            {
+                return false;
+
+            }
+            return reader.GetBoolean(0);
+        }
     }
 }

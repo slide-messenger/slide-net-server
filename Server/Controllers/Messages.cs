@@ -107,7 +107,8 @@ namespace ASPCoreServer.Controllers
                 Console.WriteLine($"Пользователя #{body.SecondId} не существует!");
                 return NotFound();
             }
-            if (body.FirstId == body.SecondId)
+            if (body.FirstId == body.SecondId || 
+                await SQLMessages.DialogExists(body.FirstId, body.SecondId))
             {
                 Console.WriteLine($"Такой чат уже существует");
                 return Conflict();

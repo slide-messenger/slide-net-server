@@ -43,7 +43,7 @@ namespace Server.Entities
         }
         public override string ToString()
         {
-            return $"<{SentAt}> {Sender}: {Content}";
+            return $"{Sender} <{SentAt}>: {Content}";
         }
     }
 }

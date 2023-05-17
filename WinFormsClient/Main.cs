@@ -37,7 +37,7 @@ namespace WinFormsClient
             MessagesHandler.ChatIds.Clear();
             MessagesHandler.Chats.Clear();
             LBChats.Items.Clear();
-            RTBTypeMessage.Clear();
+            RTBTypeMessage.Text = "Написать сообщение...";
             RTBMessages.Clear();
 
             if (AuthForm is null || AuthForm.IsDisposed)
@@ -124,15 +124,12 @@ namespace WinFormsClient
             {
                 foreach (var msg in MessagesHandler.CurrentMessages)
                 {
-                    RTBMessages.AppendText(msg.ToString() + Environment.NewLine);
-                    if (msg.SenderId == UsersHandler.CurrentUser.UserId)
-                    {
-                        int lineIdx = RTBMessages.Lines.Length - 2;
-                        RTBMessages.Select(RTBMessages.
-                            GetFirstCharIndexFromLine(lineIdx),
-                            RTBMessages.Lines[lineIdx].Length);
-                        RTBMessages.SelectionColor = Color.DodgerBlue;
-                    }
+                    RTBMessages.SelectionColor = msg.SenderId == UsersHandler.CurrentUser.UserId ?
+                        Color.DodgerBlue : Color.Black;
+                    RTBMessages.SelectionFont = new Font(RTBMessages.Font, FontStyle.Bold);
+                    RTBMessages.AppendText($"{msg.Sender} <{msg.SentAt}>: ");
+                    RTBMessages.SelectionFont = new Font(RTBMessages.Font, FontStyle.Regular);
+                    RTBMessages.AppendText($"{msg.Content}" + Environment.NewLine);
                 }
 
                 RTBMessages.SelectionStart = RTBMessages.TextLength;
@@ -159,6 +156,7 @@ namespace WinFormsClient
             {
                 RTBTypeMessage.Clear();
                 await UpdateMessages();
+                await UpdateChats();
             }
         }
 
@@ -316,6 +314,11 @@ namespace WinFormsClient
             MessageBox.Show("Личная ссылка скопирована в буфер обмена", "Личная ссылка",
                 MessageBoxButtons.OK, MessageBoxIcon.Information);
             Clipboard.SetText($"uid={UsersHandler.CurrentUser.UserId}");
+        }
+
+        private void LabelChatname_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }

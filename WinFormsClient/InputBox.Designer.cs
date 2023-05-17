@@ -65,6 +65,7 @@
             // 
             AutoScaleDimensions = new SizeF(9F, 23F);
             AutoScaleMode = AutoScaleMode.Font;
+            BackColor = SystemColors.Window;
             ClientSize = new Size(364, 108);
             Controls.Add(ButtonOK);
             Controls.Add(TBResult);
@@ -75,7 +76,7 @@
             MaximizeBox = false;
             Name = "InputBox";
             StartPosition = FormStartPosition.CenterParent;
-            Text = "SliderMessenger";
+            Text = "SlideMessenger";
             Load += InputBox_Load;
             ResumeLayout(false);
             PerformLayout();
