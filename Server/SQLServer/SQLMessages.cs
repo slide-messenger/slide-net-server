@@ -1,15 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.Extensions.Logging;
-using Npgsql;
+﻿using Npgsql;
 using Server.Entities;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Diagnostics.Eventing.Reader;
-using System.Net;
-using System.Reflection;
-using System.Security.Cryptography;
 
 namespace Server.SQLServer
 {

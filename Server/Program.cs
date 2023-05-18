@@ -1,5 +1,4 @@
 using Server.SQLServer;
-using System.Reflection.PortableExecutable;
 
 SQLServer.Connect("localhost:5432", "postgres", "DP1u4Fo5OA90hfcvRq2K", "postgres");
 

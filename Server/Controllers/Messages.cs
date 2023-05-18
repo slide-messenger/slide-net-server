@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Server.SQLServer;
-using System.Net;
 
 namespace ASPCoreServer.Controllers
 {

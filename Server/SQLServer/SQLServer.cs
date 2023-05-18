@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.Extensions.Logging;
-using Npgsql;
+﻿using Npgsql;
 
 namespace Server.SQLServer
 {
