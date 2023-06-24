@@ -10,15 +10,19 @@ C#, Github, Microsoft .NET, PostgreSQL, Visual Studio, Postman и Npgsql
 
 ## Архитектура приложения
 
-✅ Клиент-сервер  
-✅ REST API  
-✅ Контроллеры: users, messages  
-✅ База данных: users, auth_data, chat, chat_member, message  
+* Клиент-сервер
+* REST API
+* Контроллеры (users, messages)
+* База данных (users, auth_data, chat, chat_member, message)  
 
 ## Скриншоты
+<details>
+  <summary>Показать</summary>  
+  
 ![image](https://github.com/everysoftware/MyMessenger/assets/22497421/69207aaf-4f0d-4427-9ed0-2f6338c9694b)
 ![image](https://github.com/everysoftware/MyMessenger/assets/22497421/785db5e3-ae25-450d-a5f8-0dafaab4457f)
 ![image](https://github.com/everysoftware/MyMessenger/assets/22497421/8e82b8bb-66e7-4173-bdc2-da9d96f891b7)
+</details>
 
 ## Тестирование
 
