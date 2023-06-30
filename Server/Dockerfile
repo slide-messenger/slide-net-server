@@ -6,16 +6,16 @@ EXPOSE 80
 
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
-COPY ["ASPCoreServer.csproj", "."]
-RUN dotnet restore "./ASPCoreServer.csproj"
+COPY ["Server.csproj", "."]
+RUN dotnet restore "./Server.csproj"
 COPY . .
 WORKDIR "/src/."
-RUN dotnet build "ASPCoreServer.csproj" -c Release -o /app/build
+RUN dotnet build "Server.csproj" -c Release -o /app/build
 
 FROM build AS publish
-RUN dotnet publish "ASPCoreServer.csproj" -c Release -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "Server.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "ASPCoreServer.dll"]
+ENTRYPOINT ["dotnet", "Server.dll"]

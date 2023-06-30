@@ -6,7 +6,7 @@ namespace ASPCoreServer.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class Users : ControllerBase
+    public class Users : Controller
     {
         [HttpGet("[action]/{username}", Name = "GetUser")]
         [ProducesResponseType(StatusCodes.Status200OK)]

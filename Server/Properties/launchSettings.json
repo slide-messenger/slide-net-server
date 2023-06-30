@@ -2,27 +2,19 @@
   "profiles": {
     "ASPCoreServer": {
       "commandName": "Project",
-      "launchBrowser": false,
-      "launchUrl": "Messenger",
+      "launchUrl": "http://localhost:8081/status",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
       "dotnetRunMessages": true,
-      "applicationUrl": "http://localhost:5000"
-    },
-    "IIS Express": {
-      "commandName": "IISExpress",
-      "launchBrowser": true,
-      "launchUrl": "weatherforecast",
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
-      }
+      "applicationUrl": "http://localhost:8081"
     },
     "Docker": {
       "commandName": "Docker",
-      "launchBrowser": true,
-      "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}/weatherforecast",
-      "publishAllPorts": true
+      "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}/status",
+      "publishAllPorts": true,
+      "httpPort": 8081,
+      "sslPort": 8081
     }
   },
   "$schema": "https://json.schemastore.org/launchsettings.json",
@@ -30,7 +22,7 @@
     "windowsAuthentication": false,
     "anonymousAuthentication": true,
     "iisExpress": {
-      "applicationUrl": "http://localhost:7954",
+      "applicationUrl": "http://localhost:8081",
       "sslPort": 0
     }
   }

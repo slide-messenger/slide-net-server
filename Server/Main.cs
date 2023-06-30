@@ -1,8 +1,15 @@
 using Server.SQLServer;
 
-SQLServer.Connect("localhost:5432", "postgres", "DP1u4Fo5OA90hfcvRq2K", "postgres");
-
-Console.WriteLine("SQL Server is running...");
+Console.WriteLine($"Connecting to SQL Server at {SQLServer.host}...");
+try
+{
+    await SQLServer.Connect();
+    Console.WriteLine("Connected to SQL Server");
+}
+catch (Exception e)
+{
+    Console.WriteLine($"Error: {e.Message}");
+}
 
 Console.WriteLine("Start HTTP server...");
 
@@ -22,4 +29,4 @@ app.MapControllers();
 
 app.Run();
 
-
+return 0;
