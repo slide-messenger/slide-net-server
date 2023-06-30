@@ -136,7 +136,7 @@ $@"UPDATE {CHAT_TABLE}
             query =
 $@"INSERT INTO {MESSAGE_TABLE}(cid, mid, sid, content, sent_at) 
 	VALUES
-	({m.ChatId}, (SELECT mid FROM chat WHERE cid = {m.ChatId}), {m.SenderId}, '{m.Content}', '{m.SentAt:O}');";
+	({m.ChatId}, (SELECT mid FROM chat WHERE cid = {m.ChatId}), {m.SenderId}, $$ {m.Content} $$, '{m.SentAt:O}');";
             if (await SQLServer.ExecuteNonQuery(query) != 1)
             {
                 return false;
